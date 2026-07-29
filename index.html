@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LEAN PROTOCOL — Monsoon Training Cycle</title>
+<meta name="description" content="A 12-week monsoon cutting cycle with eggetarian meal plan, workout schedule, interval timer and progress tracker — built for Tom Holland-inspired functional fitness.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -19,6 +20,7 @@
   --turmeric-dim:#a97e2c;
   --paprika:#c9603f;
   --sage:#7fb08c;
+  --sky:#5fadc9;
   --shadow:0 20px 60px rgba(0,0,0,0.35);
 }
 html[data-theme="light"]{
@@ -32,6 +34,7 @@ html[data-theme="light"]{
   --turmeric-dim:#8f5f16;
   --paprika:#b34b2c;
   --sage:#3f7a52;
+  --sky:#2a6e8c;
   --shadow:0 20px 50px rgba(20,40,40,0.12);
 }
 *{box-sizing:border-box; margin:0; padding:0;}
@@ -135,7 +138,7 @@ nav.mainnav a:hover{ color:var(--text); border-color:var(--turmeric-dim); }
 .stat .num{ font-family:'Bebas Neue'; font-size:clamp(2.2rem,3.4vw,3.2rem); color:var(--turmeric); line-height:1; }
 .stat .lab{ font-family:'JetBrains Mono',monospace; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-top:0.4rem; }
 
-/* pulse divider (signature element) */
+/* pulse divider */
 .pulse-divider{ width:100%; height:clamp(2.5rem,6vw,4.5rem); margin:0; display:block; }
 .pulse-divider path{ fill:none; stroke:var(--turmeric-dim); stroke-width:2; }
 .pulse-divider .beat{ stroke:var(--turmeric); }
@@ -194,12 +197,37 @@ nav.mainnav a:hover{ color:var(--text); border-color:var(--turmeric-dim); }
 .restcard{ text-align:center; padding:clamp(2rem,5vw,3.5rem) 1rem; }
 .restcard .display{ font-size:clamp(2.5rem,6vw,4.5rem); color:var(--paprika); }
 
-/* meal items */
+/* ---------- MEAL CARDS ---------- */
 .mealtime{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); font-size:0.85rem; margin-bottom:0.2rem; }
-.mealcard{ background:var(--panel); border:1px solid var(--line); border-radius:0.9rem; padding:clamp(1rem,1.8vw,1.4rem); margin-bottom:0.9rem; }
+.mealcard{
+  background:var(--panel); border:1px solid var(--line); border-radius:0.9rem;
+  padding:clamp(1rem,1.8vw,1.4rem); margin-bottom:0.9rem;
+  transition: border-color .2s;
+}
+.mealcard:hover{ border-color:var(--turmeric-dim); }
+.mealcard.office-meal{ border-left:3px solid var(--sky); }
 .mealcard h4{ font-family:'Inter'; font-weight:700; font-size:clamp(1.05rem,1.5vw,1.25rem); margin:0.15rem 0 0.35rem; }
-.mealcard p.items{ color:var(--muted); font-size:0.95rem; }
-.mealcard .macros{ font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--sage); margin-top:0.5rem; }
+.mealcard .items{
+  color:var(--muted); font-size:0.92rem; margin-bottom: 0.5rem;
+}
+.mealcard .items ul{
+  list-style:none; margin-top:0.35rem;
+}
+.mealcard .items ul li{
+  padding:0.2rem 0 0.2rem 1rem;
+  position:relative;
+  line-height:1.4;
+}
+.mealcard .items ul li::before{
+  content:"·"; position:absolute; left:0; color:var(--turmeric);
+}
+.mealcard .macros{ font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--sage); margin-top:0.4rem; }
+.office-badge{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.08em;
+  background:rgba(95,173,201,0.15); color:var(--sky); border:1px solid rgba(95,173,201,0.3);
+  padding:0.15rem 0.5rem; border-radius:999px; margin-left:0.6rem; vertical-align:middle;
+}
 .daytotal{ margin-top:1rem; padding:1rem 1.2rem; background:var(--panel-2); border-radius:0.9rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; font-family:'JetBrains Mono',monospace; }
 .daytotal b{ color:var(--turmeric); }
 
@@ -207,7 +235,8 @@ nav.mainnav a:hover{ color:var(--text); border-color:var(--turmeric-dim); }
 .groclist{ display:grid; grid-template-columns:repeat(auto-fit,minmax(13rem,1fr)); gap:1rem; }
 .grocgroup h4{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.08em; color:var(--turmeric); margin-bottom:0.5rem; }
 .grocgroup ul{ list-style:none; color:var(--muted); font-size:0.92rem; }
-.grocgroup li{ padding:0.25rem 0; }
+.grocgroup li{ padding:0.3rem 0; display:flex; gap:0.5rem; align-items:baseline; }
+.grocgroup .qty{ font-family:'JetBrains Mono',monospace; color:var(--text); font-size:0.82rem; white-space:nowrap; }
 
 /* timer */
 .timerwrap{ display:flex; flex-wrap:wrap; gap:clamp(1.5rem,4vw,3rem); align-items:center; }
@@ -220,9 +249,16 @@ nav.mainnav a:hover{ color:var(--text); border-color:var(--turmeric-dim); }
 .btn:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(224,168,58,0.3); }
 .btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--line); }
 .btn.ghost:hover{ border-color:var(--turmeric); color:var(--turmeric); transform:none; box-shadow:none; }
+.btn.danger{ background:transparent; color:var(--paprika); border:1px solid rgba(201,96,63,0.3); }
+.btn.danger:hover{ background:rgba(201,96,63,0.1); transform:none; box-shadow:none; }
 .timerfield{ display:flex; flex-direction:column; gap:0.3rem; }
 .timerfield label{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; color:var(--muted); }
 .timerfield input{ width:5rem; background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:0.5rem; border-radius:0.5rem; font-family:'JetBrains Mono',monospace; }
+
+/* timer phase indicator */
+.phase-bar{ height:4px; border-radius:2px; background:var(--line); margin-top:1rem; overflow:hidden; }
+.phase-bar-fill{ height:100%; border-radius:2px; background:var(--sage); width:100%; transition:width 1s linear, background .3s; }
+.phase-bar-fill.rest-phase{ background:var(--paprika); }
 
 /* water */
 .waterrow{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; }
@@ -239,6 +275,22 @@ table.trackerlog th, table.trackerlog td{ text-align:left; padding:0.5rem 0.7rem
 table.trackerlog th{ color:var(--muted); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.08em; }
 canvas#progchart{ width:100%; max-height:22rem; margin-top:1rem; }
 
+/* ---------- SYNC PANEL ---------- */
+.sync-panel{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:0.9rem;
+  padding:clamp(1rem,1.8vw,1.4rem); margin-bottom:1.5rem;
+}
+.sync-panel h4{ font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--turmeric); margin-bottom:0.8rem; }
+.sync-row{ display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+.sync-row input{
+  flex:1; min-width:14rem;
+  background:var(--panel); border:1px solid var(--line); color:var(--text);
+  padding:0.6rem 0.8rem; border-radius:0.5rem; font-family:'JetBrains Mono',monospace; font-size:0.82rem;
+}
+.sync-status{ font-family:'JetBrains Mono',monospace; font-size:0.75rem; margin-top:0.6rem; color:var(--muted); }
+.sync-status.ok{ color:var(--sage); }
+.sync-status.err{ color:var(--paprika); }
+
 /* faq */
 .faqitem{ border-bottom:1px solid var(--line); padding:1.1rem 0; }
 .faqq{ display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:1rem; }
@@ -246,17 +298,25 @@ canvas#progchart{ width:100%; max-height:22rem; margin-top:1rem; }
 .faqq .plus{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); font-size:1.3rem; transition:.25s; flex:none; }
 .faqitem.open .plus{ transform:rotate(45deg); }
 .faqa{ max-height:0; overflow:hidden; transition:max-height .35s ease; color:var(--muted); }
-.faqitem.open .faqa{ max-height:30rem; padding-top:0.8rem; }
+.faqitem.open .faqa{ max-height:40rem; padding-top:0.8rem; }
 
 /* season note */
 .seasonbanner{ display:flex; gap:1rem; align-items:center; background:var(--panel-2); border:1px solid var(--line); border-left:4px solid var(--turmeric); border-radius:0.7rem; padding:1rem 1.3rem; margin-bottom:2rem; flex-wrap:wrap; }
 .seasonbanner .tag{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.7rem; color:var(--turmeric); letter-spacing:0.08em; }
 
+/* office key legend */
+.office-legend{
+  display:inline-flex; align-items:center; gap:0.5rem;
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--sky);
+  background:rgba(95,173,201,0.1); border:1px solid rgba(95,173,201,0.25);
+  padding:0.35rem 0.75rem; border-radius:999px; margin-bottom:1.2rem;
+}
+
 footer{ padding: clamp(2rem,5vw,3.5rem) 0; text-align:center; color:var(--muted); font-size:0.85rem; }
 footer .btn{ margin-top:1rem; }
 
 @media print{
-  #todaybar, nav.mainnav, .timerwrap, .waterrow, .btn, .tabbar{ display:none !important; }
+  #todaybar, nav.mainnav, .timerwrap, .waterrow, .btn, .tabbar, .sync-panel{ display:none !important; }
   .daypanel{ display:block !important; }
   body{ background:#fff; color:#000; }
 }
@@ -274,6 +334,7 @@ footer .btn{ margin-top:1rem; }
       <span class="label" id="todayLabel">Loading today's session…</span>
     </div>
     <div class="actions">
+      <button class="iconbtn" id="syncBtn" title="Sync data to cloud (GitHub Gist)" aria-label="Sync data">☁</button>
       <button class="iconbtn" id="themeToggle" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
       <button class="iconbtn" id="printBtn" title="Print / Save PDF" aria-label="Print plan">⎙</button>
     </div>
@@ -284,11 +345,12 @@ footer .btn{ margin-top:1rem; }
   <a href="#overview">Overview</a>
   <a href="#schedule">Schedule</a>
   <a href="#workout">Workout</a>
-  <a href="#timer">Interval Timer</a>
+  <a href="#timer">Timer</a>
   <a href="#meals">Meals</a>
-  <a href="#grocery">Grocery List</a>
+  <a href="#grocery">Grocery</a>
   <a href="#tracker">Progress</a>
   <a href="#water">Water</a>
+  <a href="#sync">Sync</a>
   <a href="#faq">Reality Check</a>
 </nav>
 
@@ -344,7 +406,7 @@ footer .btn{ margin-top:1rem; }
     </div>
     <div class="card" style="margin-bottom:2rem;">
       <h3>Your 2-hour block, budgeted</h3>
-      <p class="note" style="margin-bottom:0;">You don't need to fill the full 1.5–2 hours with hard training. Past ~90–100 minutes of intense work, returns drop and recovery suffers — that's true even for actors on a movie prep. Use the rest of the window for mobility, not more sets.</p>
+      <p class="note" style="margin-bottom:0;">You don't need to fill the full 2 hours with hard training. Past ~90–100 minutes of intense work, returns drop and recovery suffers. Use the rest of the window for mobility, not more sets.</p>
       <div class="timebudget">
         <span class="tb-seg"><b>10 min</b> warm-up &amp; joint mobility</span>
         <span class="tb-seg"><b>55–65 min</b> main session (lifts / circuit / boxing)</span>
@@ -366,7 +428,11 @@ footer .btn{ margin-top:1rem; }
     </div>
     <div class="card">
       <div class="timerwrap">
-        <div class="timerdisplay mono" id="timerDisplay">00:30</div>
+        <div>
+          <div class="timerdisplay mono" id="timerDisplay">00:30</div>
+          <div class="note" id="timerStatus" style="margin-top:0.4rem;">Round 0 / 0 · Ready</div>
+          <div class="phase-bar"><div class="phase-bar-fill" id="phaseBarFill"></div></div>
+        </div>
         <div class="timerctrls">
           <div class="timerfield"><label>Work (sec)</label><input type="number" id="workSec" value="30" min="5"></div>
           <div class="timerfield"><label>Rest (sec)</label><input type="number" id="restSec" value="30" min="5"></div>
@@ -378,7 +444,6 @@ footer .btn{ margin-top:1rem; }
           <button class="btn ghost" id="timerReset">Reset</button>
         </div>
       </div>
-      <div class="note" id="timerStatus" style="margin-top:1rem;">Round 0 / 0 · Ready</div>
     </div>
   </div>
 </section>
@@ -386,11 +451,15 @@ footer .btn{ margin-top:1rem; }
 <section id="meals">
   <div class="wrap">
     <div class="sectionhead">
-      <div><h2>Meal Plan</h2><p>Home-cooked, eggetarian, rotating paneer, soya and eggs across the week. Adjusted for monsoon season.</p></div>
+      <div><h2>Meal Plan</h2><p>Home-cooked, eggetarian, rotating paneer, soya and eggs. Major lunch at 11 AM before office. Adjusted for monsoon season with exact quantities.</p></div>
     </div>
     <div class="seasonbanner">
       <span class="tag">Monsoon note</span>
-      <span>Humidity is high right now, so meals lean on cooked vegetables over raw salads, ginger–turmeric for digestion and immunity, and boiled/filtered water throughout the day. Bhindi, lauki, turai, corn and moong dal are all in season.</span>
+      <span>Meals lean on cooked vegetables over raw salads, ginger–turmeric for digestion, and boiled/filtered water throughout. Seasonal picks: bhindi, lauki, turai, corn, moong dal, pomegranate.</span>
+    </div>
+    <div class="office-legend">
+      <span style="width:8px;height:8px;background:var(--sky);border-radius:50%;display:inline-block;"></span>
+      Office-friendly meal — no cooking required, easy to carry or eat out
     </div>
     <div class="tabbar" id="mealTabs"></div>
     <div id="mealPanels"></div>
@@ -400,7 +469,7 @@ footer .btn{ margin-top:1rem; }
 <section id="grocery">
   <div class="wrap">
     <div class="sectionhead">
-      <div><h2>Weekly Grocery List</h2><p>Everything the week's meals need, grouped by aisle.</p></div>
+      <div><h2>Weekly Grocery List</h2><p>Everything the week's meals need, grouped by aisle — with quantities.</p></div>
     </div>
     <div class="card">
       <div class="groclist" id="grocList"></div>
@@ -411,7 +480,7 @@ footer .btn{ margin-top:1rem; }
 <section id="tracker">
   <div class="wrap">
     <div class="sectionhead">
-      <div><h2>Progress Tracker</h2><p>Log your weekly weigh-in. Stored only on this device.</p></div>
+      <div><h2>Progress Tracker</h2><p>Log your weekly weigh-in. Stored locally and optionally synced to your private GitHub Gist.</p></div>
     </div>
     <div class="card">
       <div class="trackform">
@@ -422,7 +491,7 @@ footer .btn{ margin-top:1rem; }
       </div>
       <canvas id="progchart" height="260"></canvas>
       <table class="trackerlog" id="trackerTable">
-        <thead><tr><th>Date</th><th>Weight</th><th>Body Fat</th><th></th></tr></thead>
+        <thead><tr><th>Date</th><th>Weight</th><th>Body Fat</th><th>Fat Mass</th><th></th></tr></thead>
         <tbody id="trackerBody"></tbody>
       </table>
     </div>
@@ -432,12 +501,41 @@ footer .btn{ margin-top:1rem; }
 <section id="water">
   <div class="wrap">
     <div class="sectionhead">
-      <div><h2>Hydration</h2><p>Target ~3.5L on training days, higher in this heat and humidity. Tap a drop as you finish a glass.</p></div>
+      <div><h2>Hydration</h2><p>Target ~3.5L on training days. Tap a drop as you finish a glass (~350ml each).</p></div>
     </div>
     <div class="card">
       <div class="big mono" id="waterCount">0 / 10 glasses</div>
       <div class="waterrow" id="waterRow"></div>
       <button class="btn ghost" id="waterReset" style="margin-top:1.2rem;">Reset today</button>
+    </div>
+  </div>
+</section>
+
+<section id="sync">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Cloud Sync</h2><p>Sync your progress data across devices for free using a private GitHub Gist — no account needed beyond what you already have.</p></div>
+    </div>
+    <div class="card">
+      <div class="sync-panel">
+        <h4>🔑 Setup (one time)</h4>
+        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0.9rem;">
+          1. Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener" style="color:var(--turmeric);">github.com/settings/tokens</a> → Generate new token (classic) → tick only <b>gist</b> scope → copy it.<br>
+          2. Paste your token below. It is stored only on this device, never sent anywhere except to the GitHub API.
+        </p>
+        <div class="sync-row">
+          <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxx" autocomplete="off">
+          <button class="btn" id="syncSaveToken">Save Token</button>
+          <button class="btn danger" id="syncClearToken">Clear Token</button>
+        </div>
+        <div class="sync-status" id="tokenStatus">No token saved yet.</div>
+      </div>
+      <div style="display:flex;gap:0.7rem;flex-wrap:wrap;">
+        <button class="btn" id="syncPush">⬆ Push data to Gist</button>
+        <button class="btn ghost" id="syncPull">⬇ Pull data from Gist</button>
+      </div>
+      <div class="sync-status" id="syncStatus" style="margin-top:0.8rem;">Sync data using the buttons above.</div>
+      <p style="color:var(--muted);font-size:0.82rem;margin-top:1rem;">Your data is stored in a <b>secret (private) Gist</b> on your own GitHub account. Only you can see it with your token. No third-party servers involved.</p>
     </div>
   </div>
 </section>
@@ -460,7 +558,9 @@ footer .btn{ margin-top:1rem; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
-/* ---------------- THEME ---------------- */
+/* ================================================================
+   THEME
+================================================================ */
 const root = document.documentElement;
 const savedTheme = localStorage.getItem('lp_theme');
 if(savedTheme) root.setAttribute('data-theme', savedTheme);
@@ -473,142 +573,589 @@ document.getElementById('themeToggle').addEventListener('click', ()=>{
 document.getElementById('printBtn').addEventListener('click', ()=>window.print());
 document.getElementById('printBtn2').addEventListener('click', ()=>window.print());
 
-/* ---------------- DATA ---------------- */
-// index 0..6 = Sunday..Saturday, matching Date.getDay()
+/* ================================================================
+   DATA — WORKOUT DAYS
+================================================================ */
 const WORKOUT_DAYS = [
   { name:"Sunday", time:"Rest Day", focus:"Full Recovery", rest:true,
-    note:"No structured training. Optional 15–20 min gentle walk or stretching. Sleep is the priority today — this is when the muscle you trained all week actually rebuilds." },
+    note:"No structured training. Optional 15–20 min gentle walk or light stretching. Sleep is the priority today — this is when the muscle you trained all week actually rebuilds. Eat at your target calories, not under." },
   { name:"Monday", time:"6:30 – 8:30 AM", focus:"Push Strength + Core", rest:false,
-    warmup:["Jump rope – 3 min","Arm circles & shoulder CARs – 1 min/side","Bodyweight squats – 15 reps","Push-up to downdog – 8 reps"],
+    warmup:["Jump rope – 3 min steady pace","Arm circles forward & backward – 10 each direction","Shoulder CARs (Controlled Articular Rotations) – 5 reps/side","Bodyweight squats – 15 reps (to warm hips)","Push-up to downdog – 8 reps slow"],
     blocks:[
-      { label:"Main Lifts", ex:[["Push-ups (standard/decline/diamond)","4 × 15–20"],["Dumbbell shoulder press","4 × 10"],["Incline dumbbell press","3 × 10"],["Dips (bench or bar)","3 × 12"]] },
-      { label:"Core Finisher", ex:[["Plank-to-push-up","3 × 12"],["Hanging or lying leg raises","3 × 15"]] }
+      { label:"Main Lifts (rest 60–90 sec between sets)", ex:[
+        ["Push-ups — standard / decline / diamond (alternate daily)","4 × 15–20"],
+        ["Dumbbell shoulder press (or pike push-up if no weights)","4 × 10"],
+        ["Incline dumbbell press (or elevated push-up)","3 × 10"],
+        ["Dips — parallel bars or chair-assisted","3 × 12"]
+      ]},
+      { label:"Core Finisher (rest 45 sec between sets)", ex:[
+        ["Plank-to-push-up (hold 1 sec at top of each rep)","3 × 12"],
+        ["Hanging leg raises (or lying if no bar)","3 × 15"]
+      ]}
     ],
-    cooldown:["Chest doorway stretch – 45 sec/side","Child's pose – 1 min","Shoulder cross-body stretch – 30 sec/side"] },
+    cooldown:["Chest doorway stretch – 45 sec each side","Child's pose – 1 min","Shoulder cross-body stretch – 30 sec/side","Wrist flexor / extensor stretch – 30 sec each"] },
+
   { name:"Tuesday", time:"6:30 – 8:30 AM", focus:"Conditioning Circuit (HIIT)", rest:false,
-    warmup:["Jump rope – 3 min","High knees – 30 sec","Dynamic lunges – 10/side","Hip openers – 1 min"],
+    warmup:["Jump rope – 3 min easy","High knees – 30 sec","Dynamic walking lunges – 10/side","Hip circles – 30 sec each direction"],
     blocks:[
-      { label:"Circuit — 4–5 rounds, 30s work / 30s rest", ex:[["Burpees","30 sec"],["Mountain climbers","30 sec"],["Jump squats","30 sec"],["Jump rope","30 sec"],["Plank hold","30 sec"]] },
-      { label:"Finisher", ex:[["Steady jog or incline walk","10–15 min"]] }
+      { label:"Circuit — 4–5 rounds · 30s work / 30s rest · use the timer ↓", ex:[
+        ["Burpees (full range — chest to floor, jump at top)","30 sec"],
+        ["Mountain climbers (drive knee to opposite elbow)","30 sec"],
+        ["Jump squats (land soft, full depth)","30 sec"],
+        ["Jump rope (or tuck jumps if no rope)","30 sec"],
+        ["Plank hold (squeeze glutes and abs, don't sag)","30 sec"]
+      ]},
+      { label:"Cardio Finisher", ex:[
+        ["Steady jog or brisk incline walk","10–15 min"]
+      ]}
     ],
-    cooldown:["Standing quad stretch – 30 sec/side","Seated hamstring stretch – 45 sec/side","Deep breathing – 1 min"] },
+    cooldown:["Standing quad stretch – 30 sec/side","Seated hamstring stretch – 45 sec/side","Hip flexor kneeling stretch – 45 sec/side","Deep belly breathing – 1 min"] },
+
   { name:"Wednesday", time:"6:30 – 8:30 AM", focus:"Pull Strength + Core", rest:false,
-    warmup:["Band pull-aparts – 15 reps","Cat-cow – 1 min","Scapular pull-ups – 10 reps","Jump rope – 2 min"],
+    warmup:["Band pull-aparts (or towel pull-aparts) – 15 reps","Cat-cow – 1 min slow","Scapular pull-ups – 10 reps (hang, just depress shoulders)","Jump rope – 2 min"],
     blocks:[
-      { label:"Main Lifts", ex:[["Pull-ups (assisted if needed)","4 × 8–10"],["Bent-over dumbbell rows","4 × 10"],["Face pulls (band/cable)","3 × 15"],["Bicep curls","3 × 12"]] },
-      { label:"Core Finisher", ex:[["Russian twists","3 × 20"],["Hollow body hold","3 × 30 sec"]] }
+      { label:"Main Lifts (rest 60–90 sec between sets)", ex:[
+        ["Pull-ups — assisted if needed (band or negative reps)","4 × 8–10"],
+        ["Bent-over dumbbell rows (brace core, flat back)","4 × 10/arm"],
+        ["Face pulls — cable, band or towel-on-doorknob","3 × 15"],
+        ["Bicep curls — dumbbell or band","3 × 12"]
+      ]},
+      { label:"Core Finisher", ex:[
+        ["Russian twists (add light dumbbell when easy)","3 × 20"],
+        ["Hollow body hold (press lower back to floor)","3 × 30 sec"]
+      ]}
     ],
-    cooldown:["Lat stretch on wall – 45 sec/side","Bicep/forearm stretch – 30 sec/side","Spinal twist – 45 sec/side"] },
+    cooldown:["Lat stretch — reach arm overhead, lean to side on wall – 45 sec/side","Bicep/forearm stretch – 30 sec/side","Seated spinal twist – 45 sec/side"] },
+
   { name:"Thursday", time:"6:30 – 8:30 AM", focus:"Legs + Core", rest:false,
-    warmup:["Bodyweight squats – 15 reps","Leg swings – 10/side","Walking lunges – 10/side","Ankle circles – 30 sec/side"],
+    warmup:["Bodyweight squats – 15 reps (warm up the pattern)","Leg swings front-back – 10/side","Leg swings side-to-side – 10/side","Walking lunges – 10/side","Ankle circles – 30 sec/side"],
     blocks:[
-      { label:"Main Lifts", ex:[["Goblet / bodyweight squats","4 × 12"],["Bulgarian split squats","3 × 10/leg"],["Romanian deadlifts","3 × 10"],["Jump squats or box jumps","3 × 10"]] },
-      { label:"Core Finisher", ex:[["Calf raises","3 × 15"],["Plank variations","3 × 45 sec"]] }
+      { label:"Main Lifts (rest 75–90 sec between sets)", ex:[
+        ["Goblet squats (hold dumbbell at chest, full depth)","4 × 12"],
+        ["Bulgarian split squats — rear foot elevated on chair","3 × 10/leg"],
+        ["Romanian deadlifts — hinge at hips, soft knee, weight close","3 × 10"],
+        ["Jump squats or box jumps — explosive, absorb landing","3 × 10"]
+      ]},
+      { label:"Lower Body Finisher", ex:[
+        ["Calf raises — slow 2-up, 2-down tempo","3 × 15–20"],
+        ["Plank variations — side/front/RKC alternate each set","3 × 45 sec"]
+      ]}
     ],
-    cooldown:["Standing quad stretch – 30 sec/side","Figure-4 glute stretch – 45 sec/side","Calf stretch on wall – 30 sec/side"] },
+    cooldown:["Standing quad stretch – 30 sec/side","Figure-4 glute stretch (lying piriformis) – 45 sec/side","Calf stretch on wall (bent knee + straight knee) – 30 sec each","Child's pose – 1 min"] },
+
   { name:"Friday", time:"Evening, ~6:00 – 8:00 PM", focus:"Boxing / HIIT", rest:false,
-    warmup:["Shadow boxing – 3 min easy pace","Arm circles & wrist rolls – 1 min","Jump rope – 2 min"],
+    warmup:["Shadow boxing – 3 min easy pace (footwork only, light punches)","Arm circles & wrist rolls – 1 min","Jump rope – 2 min"],
     blocks:[
-      { label:"Boxing Conditioning", ex:[["Heavy bag or shadow boxing","4 × 3 min rounds"],["Jump rope intervals","5 min"],["Sprint intervals","10 × 20 sec on / 40 sec off"]] },
-      { label:"Ab Finisher — 3 rounds", ex:[["Bicycle crunches","20 reps"],["Leg raises","15 reps"]] }
+      { label:"Boxing Conditioning", ex:[
+        ["Heavy bag — jab-cross-hook combos, change every 30 sec. No bag: shadow box","4 × 3 min (1 min rest between rounds)"],
+        ["Jump rope — fast intervals: 30s sprint / 15s easy","5 min total"],
+        ["Sprint intervals — outdoors or on the spot (high knees max pace)","10 × 20 sec on / 40 sec off"]
+      ]},
+      { label:"Ab Finisher — 3 rounds · 30 sec rest between rounds", ex:[
+        ["Bicycle crunches — slow and deliberate, touch elbow to knee","20 reps"],
+        ["Lying leg raises — lower slowly, don't let heels touch","15 reps"]
+      ]}
     ],
-    cooldown:["Hip flexor stretch – 45 sec/side","Shoulder & chest stretch – 45 sec","Slow walk – 3 min"] },
+    cooldown:["Hip flexor stretch kneeling – 45 sec/side","Shoulder & chest doorway stretch – 45 sec","Slow walk – 3 min","Box breathing (4-4-4-4) – 2 min"] },
+
   { name:"Saturday", time:"Evening, ~6:00 – 8:00 PM", focus:"Full-Body Circuit + Mobility", rest:false,
-    warmup:["Jump rope – 3 min","World's greatest stretch – 5/side","Bodyweight squats – 15 reps"],
+    warmup:["Jump rope – 3 min","World's greatest stretch – 5/side (lunge, twist, reach)","Bodyweight squats – 15 reps"],
     blocks:[
-      { label:"Full-Body Circuit — 3–4 rounds", ex:[["Push-ups","15 reps"],["Bodyweight squats","20 reps"],["Inverted rows or rows","12 reps"],["Plank","45 sec"]] },
-      { label:"Mobility Block (gymnastics-style)", ex:[["Deep squat hold","2 × 1 min"],["Shoulder dislocates (band/towel)","2 × 10"],["Bridge hold","2 × 30 sec"]] }
+      { label:"Full-Body Circuit — 3–4 rounds · 45 sec rest between exercises", ex:[
+        ["Push-ups — max quality reps","15 reps"],
+        ["Bodyweight squats","20 reps"],
+        ["Inverted rows (under a table) or dumbbell rows","12 reps"],
+        ["Plank — brace like you're about to be punched","45 sec"]
+      ]},
+      { label:"Gymnastics-Style Mobility Block (Holland's functional base)", ex:[
+        ["Deep squat hold — hands clasped, elbows press knees out","2 × 1 min"],
+        ["Shoulder dislocates — band or towel overhead and behind","2 × 10 slow"],
+        ["Bridge hold — push hips up, squeeze glutes hard","2 × 30 sec"]
+      ]}
     ],
-    cooldown:["Full-body stretch flow – 10 min","Box breathing – 2 min"] }
+    cooldown:["Full-body stretch flow – 10 min (go through everything: hips, hamstrings, chest, lats, thoracic)","Box breathing – 2 min"] }
 ];
 
+/* ================================================================
+   DATA — MEAL DAYS
+   Meals are structured as objects for clarity.
+   office: true → meal that can be eaten at office (no rotis/hot cooking)
+================================================================ */
 const MEAL_DAYS = [
-  { name:"Sunday", subtitle:"Rest day — home-style Sunday meal, still on plan",
+  { name:"Sunday", subtitle:"Rest day — relaxed home meal, still on plan",
     meals:[
-      ["7:30 AM","Breakfast","Stuffed paneer paratha (1, light ghee) with curd","18g protein · ~380 kcal"],
-      ["10:30 AM","Mid-Morning","Fruit bowl — pomegranate, pear, seasonal jamun + a small handful of nuts","6g protein · ~180 kcal"],
-      ["1:30 PM","Lunch","Rajma or soya biryani, cucumber-onion salad, curd","28g protein · ~620 kcal"],
-      ["5:00 PM","Evening","Roasted makhana (fox nuts) + masala chai","6g protein · ~160 kcal"],
-      ["8:30 PM","Dinner","Light moong dal soup, sautéed seasonal veg, 1 roti","20g protein · ~420 kcal"],
-      ["9:45 PM","Before Bed","Warm turmeric milk (haldi doodh)","7g protein · ~130 kcal"]
-    ], total:"≈2,250 kcal · ~85g protein (lighter, relaxed rest-day meal)" },
-  { name:"Monday", subtitle:"Post-Push-Day refuel",
+      { time:"8:00 AM", label:"Breakfast", office:false,
+        name:"Masala Omelette + Paratha",
+        items:[
+          "3 whole eggs, beaten with salt, pepper, green chilli, coriander",
+          "1 medium onion (60g), finely chopped",
+          "1 medium tomato (80g), deseeded, diced",
+          "½ capsicum (50g), diced",
+          "1 tsp ghee or oil for pan",
+          "1 multigrain paratha (80g dough ball, cooked in ½ tsp ghee)",
+          "100g curd (plain dahi) on the side"
+        ],
+        macros:"~38g protein · ~580 kcal · ~18g fat" },
+      { time:"10:30 AM", label:"Mid-Morning", office:false,
+        name:"Seasonal Fruit + Nuts",
+        items:[
+          "½ medium pomegranate, arils removed (~80g)",
+          "1 small pear (100g) or 1 guava",
+          "6 soaked almonds",
+          "2 walnut halves"
+        ],
+        macros:"~5g protein · ~190 kcal · ~9g fat" },
+      { time:"1:00 PM", label:"Lunch", office:false,
+        name:"Rajma + Jeera Rice + Curd + Salad",
+        items:[
+          "1 cup cooked rajma (kidney beans, ~120g cooked, from 50g dry)",
+          "¾ cup cooked jeera rice (~130g cooked, from 50g raw rice)",
+          "1 medium lauki (bottle gourd, 150g), cooked with onion-tomato masala",
+          "1 tsp ghee over rice",
+          "150g curd (dahi)",
+          "Salad: ½ cucumber (80g) sliced, 1 small onion (40g), lemon juice, chaat masala"
+        ],
+        macros:"~28g protein · ~620 kcal · ~10g fat" },
+      { time:"5:00 PM", label:"Evening", office:false,
+        name:"Roasted Makhana + Masala Chai",
+        items:[
+          "40g roasted makhana (fox nuts, about 2 handfuls), tossed with ¼ tsp ghee + chaat masala",
+          "1 cup masala chai with 80ml milk, no sugar or 1 tsp jaggery"
+        ],
+        macros:"~6g protein · ~170 kcal · ~4g fat" },
+      { time:"8:00 PM", label:"Dinner", office:false,
+        name:"Moong Dal + Bhindi Sabzi + 1 Roti",
+        items:[
+          "¾ cup cooked moong dal (yellow, ~100g cooked, from 40g dry)",
+          "200g bhindi (okra), washed, dried, sliced — sautéed in 1 tsp oil with cumin, onion",
+          "1 medium multigrain roti (30g dough)",
+          "½ tsp ghee on roti"
+        ],
+        macros:"~22g protein · ~440 kcal · ~10g fat" },
+      { time:"9:30 PM", label:"Before Bed", office:false,
+        name:"Turmeric Milk",
+        items:[
+          "250ml warm full-fat milk",
+          "¼ tsp turmeric powder",
+          "Small pinch black pepper (helps absorb curcumin)",
+          "No sugar"
+        ],
+        macros:"~8g protein · ~160 kcal · ~8g fat" }
+    ], total:"≈2,160 kcal · ~107g protein (rest day, slightly lower)" },
+
+  { name:"Monday", subtitle:"Post-Push morning — major protein refuel before office",
     meals:[
-      ["6:00 AM","Pre-Workout","Soaked almonds (6) + walnuts (2) + warm water with lemon","4g protein · ~110 kcal"],
-      ["8:45 AM","Breakfast","Masala egg bhurji (3 eggs) with onion-tomato-capsicum + 2 besan chillas + curd","35g protein · ~520 kcal"],
-      ["11:00 AM","Mid-Morning","Roasted soya chunks chaat (50g dry) with cucumber, lemon, chaat masala","26g protein · ~260 kcal"],
-      ["1:30 PM","Lunch","2 multigrain rotis, paneer bhurji (100g), moong dal, lauki sabzi, curd, salad","35g protein · ~560 kcal"],
-      ["5:00 PM","Evening","Sprouts chaat (moong + chana, 1 cup) + green tea","12g protein · ~180 kcal"],
-      ["8:00 PM","Dinner","Soya chaap tikka (100g), sautéed bhindi, 1 roti, curd","30g protein · ~460 kcal"],
-      ["9:30 PM","Before Bed","Warm turmeric milk","7g protein · ~130 kcal"]
-    ], total:"≈2,220 kcal · ~149g protein" },
-  { name:"Tuesday", subtitle:"HIIT day fuel — quicker digesting breakfast",
+      { time:"6:00 AM", label:"Pre-Workout (before 6:30 AM)", office:false,
+        name:"Light Pre-Workout Snack",
+        items:[
+          "6 soaked almonds (soak overnight, peel in morning)",
+          "2 walnut halves",
+          "1 glass (200ml) warm water with juice of ½ lemon"
+        ],
+        macros:"~4g protein · ~100 kcal · ~8g fat" },
+      { time:"8:45 AM", label:"Breakfast (post-workout)", office:false,
+        name:"Egg Bhurji (3 eggs) + 2 Besan Chillas + Curd",
+        items:[
+          "3 whole eggs, scrambled with 1 tsp oil",
+          "½ medium onion (40g), ½ tomato (50g), ½ capsicum (40g) for bhurji",
+          "2 besan chillas: 100g besan (gram flour), ½ tsp ajwain, salt, water — thin batter",
+          "1 tsp oil for chillas",
+          "150g curd on the side"
+        ],
+        macros:"~38g protein · ~540 kcal · ~18g fat" },
+      { time:"11:00 AM", label:"MAJOR LUNCH (before office)", office:false,
+        name:"Paneer Bhurji + 2 Rotis + Moong Dal + Lauki Sabzi + Salad",
+        items:[
+          "120g paneer, crumbled — cooked with 1 tsp oil, onion, tomato, turmeric, garam masala",
+          "1 medium onion (80g) + 1 medium tomato (80g) for paneer masala",
+          "¾ cup cooked moong dal (from 35g dry), seasoned with jeera tadka",
+          "150g lauki, diced and cooked with 1 tsp oil, cumin, coriander powder",
+          "2 medium multigrain rotis (35g dough each)",
+          "Salad: ½ cucumber (70g), 5–6 radish slices, lemon juice",
+          "1 tsp ghee on dal"
+        ],
+        macros:"~40g protein · ~680 kcal · ~20g fat" },
+      { time:"4:30 PM", label:"Office Snack", office:true,
+        name:"Roasted Soya Chaat",
+        items:[
+          "50g dry roasted soya chunks (nutrela) — pre-pack these at home",
+          "1 small cucumber, carry whole and slice at office",
+          "Squeeze of lemon, pinch of chaat masala (carry in small box)"
+        ],
+        macros:"~26g protein · ~240 kcal · ~4g fat" },
+      { time:"8:00 PM", label:"Dinner", office:false,
+        name:"Soya Chaap Tikka + Bhindi + 1 Roti + Curd",
+        items:[
+          "100g fresh soya chaap, marinated in curd-spice mix, pan-grilled or air-fried",
+          "200g bhindi, dry-roasted in 1 tsp oil with coriander powder, amchur",
+          "1 multigrain roti (35g dough)",
+          "100g curd on the side"
+        ],
+        macros:"~32g protein · ~460 kcal · ~14g fat" },
+      { time:"9:30 PM", label:"Before Bed", office:false,
+        name:"Warm Turmeric Milk",
+        items:[
+          "250ml warm full-fat milk",
+          "¼ tsp turmeric + pinch black pepper"
+        ],
+        macros:"~8g protein · ~160 kcal · ~8g fat" }
+    ], total:"≈2,180 kcal · ~148g protein" },
+
+  { name:"Tuesday", subtitle:"HIIT day — quick-digesting breakfast, major lunch before office",
     meals:[
-      ["6:00 AM","Pre-Workout","3 dates + soaked almonds","3g protein · ~140 kcal"],
-      ["8:45 AM","Breakfast","Vegetable poha with roasted peanuts + 2 boiled eggs","24g protein · ~480 kcal"],
-      ["11:00 AM","Mid-Morning","Pan-toasted paneer cubes (75g) with chaat masala + herbal tea","14g protein · ~200 kcal"],
-      ["1:30 PM","Lunch","Soya chunk curry (60g dry), 2 rotis, turai sabzi, curd, salad","32g protein · ~540 kcal"],
-      ["5:00 PM","Evening","Roasted chana (½ cup) + tea","10g protein · ~160 kcal"],
-      ["8:00 PM","Dinner","Egg curry (2 eggs), small bowl jeera rice, cucumber raita","22g protein · ~480 kcal"],
-      ["9:30 PM","Before Bed","Warm plain milk","7g protein · ~110 kcal"]
-    ], total:"≈2,110 kcal · ~112g protein" },
-  { name:"Wednesday", subtitle:"Post-Pull-Day refuel",
+      { time:"6:00 AM", label:"Pre-Workout", office:false,
+        name:"Dates + Almonds",
+        items:[
+          "3 Medjool dates (or 5 smaller Deglet dates, ~40g total)",
+          "6 soaked almonds"
+        ],
+        macros:"~3g protein · ~150 kcal · ~4g fat" },
+      { time:"8:45 AM", label:"Breakfast (post-HIIT)", office:false,
+        name:"Vegetable Poha + 2 Boiled Eggs",
+        items:[
+          "80g dry poha (flattened rice), rinsed and drained",
+          "½ medium onion (50g), mustard seeds, curry leaves, turmeric",
+          "1 medium potato (80g), diced small — or skip for lower carb",
+          "30g roasted peanuts (small handful)",
+          "1 tsp oil, lemon juice, coriander to finish",
+          "2 whole eggs, hard boiled"
+        ],
+        macros:"~24g protein · ~490 kcal · ~16g fat" },
+      { time:"11:00 AM", label:"MAJOR LUNCH (before office)", office:false,
+        name:"Soya Chunk Curry + 2 Rotis + Turai Sabzi + Curd + Salad",
+        items:[
+          "60g dry soya chunks, soaked 20 min in warm water, squeezed → cooked in onion-tomato gravy",
+          "1 large onion (100g) + 2 medium tomatoes (160g) for curry base",
+          "200g turai (ridge gourd), peeled, diced, cooked with jeera and garlic",
+          "2 garlic cloves + 1 inch ginger (grated) in curry",
+          "2 medium multigrain rotis (35g dough each)",
+          "150g curd",
+          "Salad: ½ cucumber, ½ small beetroot (40g) boiled, lemon"
+        ],
+        macros:"~38g protein · ~660 kcal · ~14g fat" },
+      { time:"4:30 PM", label:"Office Snack", office:true,
+        name:"Paneer Cubes + Fruit",
+        items:[
+          "75g paneer, cubed at home, sprinkled with chaat masala — carry in box",
+          "1 medium pear (100g) or 1 small banana",
+          "No heating needed"
+        ],
+        macros:"~16g protein · ~250 kcal · ~12g fat" },
+      { time:"8:00 PM", label:"Dinner", office:false,
+        name:"Egg Curry + Small Jeera Rice + Cucumber Raita",
+        items:[
+          "2 whole eggs, hard boiled, added to onion-tomato-garam masala gravy",
+          "1 medium onion (80g) + 1 medium tomato (80g) for gravy",
+          "½ cup cooked jeera rice (~90g cooked, from 35g raw rice)",
+          "Raita: 100g curd, ½ cucumber (60g) grated, roasted jeera powder, salt"
+        ],
+        macros:"~24g protein · ~470 kcal · ~14g fat" },
+      { time:"9:30 PM", label:"Before Bed", office:false,
+        name:"Warm Plain Milk",
+        items:[
+          "250ml warm full-fat milk",
+          "No flavourings needed — eat a piece of jaggery (5g) separately if you need sweetness"
+        ],
+        macros:"~8g protein · ~150 kcal · ~8g fat" }
+    ], total:"≈2,170 kcal · ~113g protein" },
+
+  { name:"Wednesday", subtitle:"Post-Pull day — major lunch before office",
     meals:[
-      ["6:00 AM","Pre-Workout","Walnuts + half a banana","3g protein · ~120 kcal"],
-      ["8:45 AM","Breakfast","2 besan cheelas stuffed with paneer + curd","26g protein · ~460 kcal"],
-      ["11:00 AM","Mid-Morning","2 boiled eggs + cucumber sticks","13g protein · ~160 kcal"],
-      ["1:30 PM","Lunch","Moong dal, 2 rotis, bhindi sabzi, small soya pulao, salad","30g protein · ~560 kcal"],
-      ["5:00 PM","Evening","Sprouts and lemon chaat","10g protein · ~150 kcal"],
-      ["8:00 PM","Dinner","Paneer tikka (100g), sautéed spinach, 1 roti","28g protein · ~440 kcal"],
-      ["9:30 PM","Before Bed","Warm turmeric milk","7g protein · ~130 kcal"]
-    ], total:"≈2,020 kcal · ~117g protein" },
-  { name:"Thursday", subtitle:"Post-Leg-Day refuel",
+      { time:"6:00 AM", label:"Pre-Workout", office:false,
+        name:"Walnuts + Half Banana",
+        items:[
+          "4 walnut halves (~15g)",
+          "1 small banana (80g, not fully ripe — lower glycemic)"
+        ],
+        macros:"~3g protein · ~130 kcal · ~8g fat" },
+      { time:"8:45 AM", label:"Breakfast (post-Pull)", office:false,
+        name:"2 Stuffed Besan Cheelas + Curd",
+        items:[
+          "100g besan, 1 tsp ajwain, ½ tsp turmeric, salt — make thin pancake batter with water",
+          "Filling: 60g paneer, crumbled + 1 tbsp chopped onion + coriander + green chilli",
+          "1 tsp oil per cheela × 2 cheelas",
+          "200g curd on the side"
+        ],
+        macros:"~28g protein · ~470 kcal · ~14g fat" },
+      { time:"11:00 AM", label:"MAJOR LUNCH (before office)", office:false,
+        name:"Moong Dal + Bhindi Sabzi + Soya Pulao + Salad",
+        items:[
+          "½ cup cooked moong dal (from 25g dry, with tadka of ghee + jeera)",
+          "150g bhindi, sliced, dry-roasted in 1 tsp oil with coriander-cumin powder, amchur",
+          "Soya pulao: 50g raw rice cooked with 25g dry soya chunks + whole spices (bay leaf, cloves, cinnamon)",
+          "1 small onion (60g) + 1 tomato (80g) for pulao masala",
+          "Salad: ½ cucumber (70g), 1 small tomato (60g), lemon, black salt"
+        ],
+        macros:"~32g protein · ~590 kcal · ~10g fat" },
+      { time:"4:30 PM", label:"Office Snack", office:true,
+        name:"2 Boiled Eggs + Cucumber Sticks",
+        items:[
+          "2 whole eggs, hard boiled (boil batch at home on Sunday or Monday night)",
+          "½ cucumber (80g) sliced into sticks — carry in a box",
+          "Small sachet chaat masala or black salt"
+        ],
+        macros:"~14g protein · ~160 kcal · ~10g fat" },
+      { time:"8:00 PM", label:"Dinner", office:false,
+        name:"Paneer Tikka + Sautéed Spinach + 1 Roti",
+        items:[
+          "100g paneer, cubed — marinated in 2 tbsp curd + tandoori masala, cooked in pan/OTG",
+          "150g fresh spinach (palak), sautéed in ½ tsp oil with garlic (3 cloves) + pinch nutmeg",
+          "1 multigrain roti (35g dough)",
+          "½ tsp ghee on roti"
+        ],
+        macros:"~28g protein · ~430 kcal · ~18g fat" },
+      { time:"9:30 PM", label:"Before Bed", office:false,
+        name:"Warm Turmeric Milk",
+        items:[
+          "250ml warm full-fat milk",
+          "¼ tsp turmeric + pinch black pepper"
+        ],
+        macros:"~8g protein · ~160 kcal · ~8g fat" }
+    ], total:"≈1,940 kcal · ~113g protein" },
+
+  { name:"Thursday", subtitle:"Post-Legs day — heavier lunch, office afternoon",
     meals:[
-      ["6:00 AM","Pre-Workout","Almonds + 2 dates","3g protein · ~130 kcal"],
-      ["8:45 AM","Breakfast","3-egg omelette with veggies + multigrain toast","24g protein · ~450 kcal"],
-      ["11:00 AM","Mid-Morning","Roasted soya chunks + a pear or pomegranate","22g protein · ~230 kcal"],
-      ["1:30 PM","Lunch","Paneer bhurji, 2 rotis, lauki-chana dal, curd, salad","34g protein · ~560 kcal"],
-      ["5:00 PM","Evening","Buttermilk (chaas) + roasted makhana","8g protein · ~150 kcal"],
-      ["8:00 PM","Dinner","Soya chaap curry, small jeera rice, salad","28g protein · ~460 kcal"],
-      ["9:30 PM","Before Bed","Warm plain milk","7g protein · ~110 kcal"]
-    ], total:"≈2,090 kcal · ~126g protein" },
-  { name:"Friday", subtitle:"Evening boxing session — light, easily-digested day meals",
+      { time:"6:00 AM", label:"Pre-Workout", office:false,
+        name:"Almonds + Dates",
+        items:[
+          "8 soaked almonds (soak overnight)",
+          "2 dates (~20g)"
+        ],
+        macros:"~3g protein · ~130 kcal · ~6g fat" },
+      { time:"8:45 AM", label:"Breakfast (post-Legs)", office:false,
+        name:"3-Egg Veggie Omelette + Multigrain Toast",
+        items:[
+          "3 whole eggs beaten with salt, pepper, chilli flakes",
+          "½ capsicum (50g) + 5–6 mushrooms (50g) or spinach — sautéed in ½ tsp oil as filling",
+          "1 tsp oil/butter in pan for omelette",
+          "2 slices multigrain bread (toasted), ~60g total"
+        ],
+        macros:"~28g protein · ~480 kcal · ~20g fat" },
+      { time:"11:00 AM", label:"MAJOR LUNCH (before office)", office:false,
+        name:"Paneer Bhurji + Lauki-Chana Dal + 2 Rotis + Salad + Curd",
+        items:[
+          "120g paneer crumbled — bhurji with 1 tsp oil, ½ onion (50g), 1 tomato (80g), cumin, coriander",
+          "½ cup lauki-chana dal: 30g chana dal + 100g lauki cubed, cooked together with tadka",
+          "2 medium rotis (35g dough each)",
+          "150g curd",
+          "Salad: ½ cucumber, ½ carrot (50g) grated, lemon, chaat masala"
+        ],
+        macros:"~42g protein · ~680 kcal · ~20g fat" },
+      { time:"4:30 PM", label:"Office Snack", office:true,
+        name:"Roasted Soya Chunks + Fruit",
+        items:[
+          "40g dry roasted soya chunks (pre-pack at home — these are crunchy and dry, no prep needed)",
+          "1 medium apple (130g) or 1 guava",
+          "Carry in a small zip-lock bag + fruit separately"
+        ],
+        macros:"~22g protein · ~240 kcal · ~3g fat" },
+      { time:"8:00 PM", label:"Dinner", office:false,
+        name:"Soya Chaap Curry + Small Jeera Rice + Salad",
+        items:[
+          "100g fresh soya chaap, cut into pieces — cooked in onion-tomato-curd gravy",
+          "1 large onion (100g) + 1 medium tomato (80g) for gravy",
+          "½ cup cooked jeera rice (~90g, from 35g raw rice)",
+          "Salad: ½ cucumber, 1 small tomato, lemon"
+        ],
+        macros:"~28g protein · ~440 kcal · ~10g fat" },
+      { time:"9:30 PM", label:"Before Bed", office:false,
+        name:"Warm Plain Milk",
+        items:[
+          "250ml warm full-fat milk"
+        ],
+        macros:"~8g protein · ~150 kcal · ~8g fat" }
+    ], total:"≈2,120 kcal · ~131g protein" },
+
+  { name:"Friday", subtitle:"Evening boxing session — lighter daytime, big post-workout dinner",
     meals:[
-      ["7:30 AM","Breakfast","Oats porridge cooked in milk + 2 boiled eggs","20g protein · ~420 kcal"],
-      ["10:30 AM","Mid-Morning","1 light paneer paratha + curd","16g protein · ~360 kcal"],
-      ["1:00 PM","Lunch","Moong dal khichdi with veggies + curd (easy to digest before training)","18g protein · ~440 kcal"],
-      ["4:30 PM","Pre-Workout","Banana + roasted chana","8g protein · ~180 kcal"],
-      ["8:30 PM","Post-Workout Dinner","Soya chunk masala, 2 rotis, salad","30g protein · ~500 kcal"],
-      ["9:45 PM","Before Bed","Warm turmeric milk","7g protein · ~130 kcal"]
-    ], total:"≈2,030 kcal · ~99g protein" },
-  { name:"Saturday", subtitle:"Evening full-body session",
+      { time:"7:30 AM", label:"Breakfast", office:false,
+        name:"Oats Porridge + 2 Boiled Eggs",
+        items:[
+          "60g rolled oats (dry weight), cooked in 250ml full-fat milk",
+          "1 small banana (80g), sliced on top",
+          "1 tsp honey or 5g jaggery",
+          "8 soaked almonds, chopped in",
+          "2 whole eggs, hard boiled on the side"
+        ],
+        macros:"~24g protein · ~540 kcal · ~16g fat" },
+      { time:"10:30 AM", label:"Mid-Morning", office:false,
+        name:"Paneer Paratha + Curd (if at home) / Carry Snack (if at office)",
+        items:[
+          "1 small paneer paratha (80g dough + 40g paneer stuffing), cooked in ½ tsp ghee",
+          "OR (office): 75g paneer cubes in box + 1 banana",
+          "100g curd on the side at home"
+        ],
+        office:true,
+        macros:"~16g protein · ~360 kcal · ~14g fat" },
+      { time:"1:00 PM", label:"MAJOR Lunch", office:true,
+        name:"Moong Dal Khichdi + Curd (easy to digest before evening session)",
+        items:[
+          "40g raw rice + 30g moong dal (yellow) — cook together into soft khichdi",
+          "150g mixed vegetables in khichdi: 80g lauki + ½ carrot (50g), diced",
+          "1 tsp ghee, ½ tsp turmeric, 1 tsp cumin seeds, 1 inch ginger",
+          "150g curd on the side",
+          "This is lighter than usual lunch — intentional before the evening boxing session"
+        ],
+        macros:"~18g protein · ~430 kcal · ~8g fat" },
+      { time:"4:30 PM", label:"Pre-Workout (90 min before training)", office:true,
+        name:"Banana + Roasted Chana",
+        items:[
+          "1 large banana (120g)",
+          "40g roasted chana (Bengal gram) — pre-packed"
+        ],
+        macros:"~8g protein · ~270 kcal · ~4g fat" },
+      { time:"8:30 PM", label:"Post-Workout Dinner", office:false,
+        name:"Soya Chunk Masala + 2 Rotis + Salad",
+        items:[
+          "70g dry soya chunks, soaked and cooked in rich onion-tomato-curd masala",
+          "1 large onion (100g) + 2 tomatoes (160g) + 1 tsp kashmiri red chilli for gravy",
+          "2 tsp oil for cooking",
+          "2 medium multigrain rotis (35g dough each)",
+          "Salad: 1 cucumber, ½ onion, green chilli, lemon"
+        ],
+        macros:"~36g protein · ~560 kcal · ~12g fat" },
+      { time:"9:45 PM", label:"Before Bed", office:false,
+        name:"Warm Turmeric Milk",
+        items:["250ml warm milk + ¼ tsp turmeric + pinch black pepper"],
+        macros:"~8g protein · ~160 kcal · ~8g fat" }
+    ], total:"≈2,320 kcal · ~110g protein (higher carbs to fuel boxing session)" },
+
+  { name:"Saturday", subtitle:"Evening full-body session — relaxed morning, refuel after training",
     meals:[
-      ["7:30 AM","Breakfast","Vegetable daliya (broken wheat porridge) + 2 boiled eggs","18g protein · ~400 kcal"],
-      ["10:30 AM","Mid-Morning","Roasted soya nuts + a piece of fruit","20g protein · ~220 kcal"],
-      ["1:00 PM","Lunch","Paneer curry, 2 rotis, seasonal corn-veg sabzi, salad","30g protein · ~560 kcal"],
-      ["4:30 PM","Pre-Workout","Dates + almonds","4g protein · ~150 kcal"],
-      ["8:30 PM","Post-Workout Dinner","Egg curry (2 eggs), jeera rice, cucumber raita","22g protein · ~470 kcal"],
-      ["9:45 PM","Before Bed","Warm plain milk","7g protein · ~110 kcal"]
-    ], total:"≈2,120 kcal · ~101g protein" }
+      { time:"7:30 AM", label:"Breakfast", office:false,
+        name:"Vegetable Daliya + 2 Boiled Eggs",
+        items:[
+          "60g broken wheat (daliya), dry weight — cooked in 300ml water with:",
+          "1 small carrot (60g), diced; 50g peas (fresh or frozen)",
+          "½ onion (50g), 1 medium tomato (70g), 1 tsp oil, cumin, turmeric",
+          "2 whole eggs, hard boiled on the side"
+        ],
+        macros:"~22g protein · ~460 kcal · ~12g fat" },
+      { time:"10:30 AM", label:"Mid-Morning", office:false,
+        name:"Roasted Soya Nuts + Seasonal Fruit",
+        items:[
+          "40g dry roasted soya chunks or soya nuts (can buy ready-roasted)",
+          "1 guava (100g) or ½ pomegranate",
+          "5–6 almonds"
+        ],
+        macros:"~22g protein · ~250 kcal · ~8g fat" },
+      { time:"1:00 PM", label:"MAJOR Lunch (home Saturday)", office:false,
+        name:"Paneer Curry + 2 Rotis + Seasonal Sabzi + Salad",
+        items:[
+          "120g paneer, cubed — in onion-tomato-cashew (10g cashews) gravy",
+          "1 large onion (100g) + 2 medium tomatoes (160g) + 1 tsp kashmiri chilli for curry",
+          "200g seasonal sabzi: bhindi or turai or corn + onion sautéed in 1 tsp oil",
+          "2 medium multigrain rotis (35g dough each)",
+          "Salad: 1 medium cucumber, 1 small onion, 1 small tomato, chaat masala, lemon"
+        ],
+        macros:"~32g protein · ~620 kcal · ~20g fat" },
+      { time:"4:30 PM", label:"Pre-Workout (90 min before training)", office:false,
+        name:"Dates + Almonds",
+        items:[
+          "4 dates (~35g)",
+          "10 almonds (~15g)"
+        ],
+        macros:"~4g protein · ~180 kcal · ~8g fat" },
+      { time:"8:30 PM", label:"Post-Workout Dinner", office:false,
+        name:"Egg Curry + Jeera Rice + Cucumber Raita",
+        items:[
+          "3 whole eggs, hard boiled — in onion-tomato-garam masala curry",
+          "1 medium onion (80g) + 2 medium tomatoes (150g) for curry",
+          "½ cup cooked jeera rice (~90g cooked, from 35g raw rice) + 1 tsp ghee",
+          "Raita: 100g curd, ½ cucumber (60g) grated, roasted jeera, black salt"
+        ],
+        macros:"~28g protein · ~530 kcal · ~18g fat" },
+      { time:"9:45 PM", label:"Before Bed", office:false,
+        name:"Warm Plain Milk",
+        items:["250ml warm milk"],
+        macros:"~8g protein · ~150 kcal · ~8g fat" }
+    ], total:"≈2,190 kcal · ~116g protein" }
 ];
 
+/* ================================================================
+   DATA — GROCERY (with quantities for 1 week)
+================================================================ */
 const GROCERY = {
-  "Protein": ["Eggs (2 dozen/week)","Paneer (~700g/week)","Soya chunks / nutrela (500g pack)","Soya chaap (fresh, 300g)","Moong dal, chana dal, toor dal"],
-  "Dairy": ["Milk (for cooking + bedtime)","Curd / dahi (daily)","Ghee (small quantity)"],
-  "Vegetables (monsoon-season)": ["Bhindi (okra)","Lauki (bottle gourd)","Turai (ridge gourd)","Spinach (cooked, not raw)","Seasonal corn (bhutta)","Onion, tomato, capsicum, cucumber","Ginger & garlic"],
-  "Grains & Pantry": ["Multigrain atta","Poha","Besan (gram flour)","Broken wheat (daliya)","Rice (small quantities)","Oats"],
-  "Nuts, Fruit & Extras": ["Almonds, walnuts","Dates","Roasted chana","Makhana (fox nuts)","Seasonal fruit — pomegranate, pear, jamun","Turmeric, chaat masala, cumin"]
+  "Protein — Eggs & Dairy": [
+    { item:"Eggs", qty:"2 dozen (24 eggs)" },
+    { item:"Paneer (fresh)", qty:"~800g total" },
+    { item:"Curd / Dahi", qty:"~2 kg (buy 2× 1kg tubs)" },
+    { item:"Full-fat milk", qty:"~2.5 litres" },
+    { item:"Soya chunks (dry, Nutrela or similar)", qty:"500g pack" },
+    { item:"Soya chaap (fresh)", qty:"~300g (Fri + Sat)" }
+  ],
+  "Dals & Grains": [
+    { item:"Moong dal (yellow split)", qty:"500g" },
+    { item:"Chana dal", qty:"250g" },
+    { item:"Rajma (red kidney beans)", qty:"250g" },
+    { item:"Multigrain atta", qty:"1 kg" },
+    { item:"Rice (for pulao + khichdi)", qty:"500g" },
+    { item:"Poha (flattened rice)", qty:"250g" },
+    { item:"Rolled oats", qty:"500g" },
+    { item:"Daliya (broken wheat)", qty:"500g" },
+    { item:"Besan (gram flour)", qty:"500g" },
+    { item:"Roasted chana", qty:"300g" }
+  ],
+  "Vegetables (Monsoon Seasonal)": [
+    { item:"Bhindi (okra)", qty:"~700g (for 3 meals)" },
+    { item:"Lauki (bottle gourd)", qty:"2 medium, ~700g total" },
+    { item:"Turai (ridge gourd)", qty:"2 medium, ~500g total" },
+    { item:"Spinach (palak, cooked)", qty:"~300g" },
+    { item:"Capsicum (green)", qty:"3 medium (~300g)" },
+    { item:"Seasonal corn (bhutta)", qty:"2 ears (~300g)" },
+    { item:"Carrot", qty:"4 medium (~350g)" },
+    { item:"Onion", qty:"1 kg" },
+    { item:"Tomato", qty:"1.5 kg" },
+    { item:"Cucumber", qty:"6 medium (~700g)" },
+    { item:"Ginger root", qty:"1 large piece (~80g)" },
+    { item:"Garlic", qty:"1 full head" }
+  ],
+  "Fruits & Nuts": [
+    { item:"Almonds (raw, to soak)", qty:"200g" },
+    { item:"Walnuts (halves)", qty:"100g" },
+    { item:"Dates (Medjool or Deglet)", qty:"200g" },
+    { item:"Roasted makhana (fox nuts)", qty:"200g" },
+    { item:"Pomegranate", qty:"2 medium" },
+    { item:"Pear or Guava (seasonal)", qty:"4–5 pieces" },
+    { item:"Banana", qty:"1 dozen (green-ripe)" }
+  ],
+  "Pantry & Spices": [
+    { item:"Ghee (pure desi)", qty:"250g tub" },
+    { item:"Cooking oil (groundnut/mustard)", qty:"500ml" },
+    { item:"Turmeric powder", qty:"100g" },
+    { item:"Cumin seeds (jeera)", qty:"100g" },
+    { item:"Coriander powder", qty:"100g" },
+    { item:"Chaat masala", qty:"50g" },
+    { item:"Garam masala", qty:"50g" },
+    { item:"Kashmiri red chilli powder", qty:"50g" },
+    { item:"Multigrain bread (for Thursday)", qty:"1 loaf (10 slices)" },
+    { item:"Jaggery (gur) — for milk / occasional sweetness", qty:"100g" }
+  ]
 };
 
+/* ================================================================
+   DATA — FAQ
+================================================================ */
 const FAQ = [
-  { q:"Will this exact workout give me Tom Holland's body?", a:"Not on its own, realistically — and that's worth being honest about. His training for a role is his full-time job for months: multiple sessions a day, a personal trainer, a private chef, and recovery support like physio and massage that most people don't have access to. On top of that, the leanest 'shirtless scene' look actors show on camera is often achieved with short-term water and carb manipulation, oiling and lighting for that one shot — not their everyday walking-around condition. What this plan will genuinely do, if you run it consistently, is build real strength, conditioning and a leaner, athletic physique over months — just on a realistic timeline for someone with classes, an internship and one training window a day, not a movie budget." },
-  { q:"Is 2 hours of training every day too much?", a:"Probably more than you need. Past about 90–100 minutes of focused, intense work, quality drops and recovery starts to suffer — that applies to almost everyone, not just beginners. Use the structured ~95-minute session in the Workout section, and if you still have time left in your window, spend it on mobility, stretching or a slow walk rather than more sets. More volume isn't the lever that gets you leaner here — your calorie deficit and consistency are." },
-  { q:"Why no whey in this plan?", a:"You don't need it. At ~140g protein/day, eggs, paneer, soya chunks/chaap, dals and dairy comfortably cover your target — the meal plan is built to hit that number without any protein powder." },
-  { q:"What if my weight loss stalls?", a:"Expect non-linear weeks — water retention, sleep and the monsoon humidity all move the scale independently of fat loss. If your weekly average genuinely stalls for two weeks straight, drop your target intake by ~150 kcal and reassess in another two weeks, rather than reacting to a single day's number." },
-  { q:"Can I swap meals around?", a:"Yes — the daily protein and calorie totals matter more than the exact meal. Swap paneer for soya or eggs for the equivalent protein amount freely across the week." }
+  { q:"Will this exact workout give me Tom Holland's body?",
+    a:"Honestly, not on its own — and it's worth being honest about that. His training for a role is his full-time job for months: multiple sessions a day, a personal trainer, a private chef, and recovery support like physio and massage that most people don't have access to. On top of that, the leanest 'shirtless scene' look you see on screen is often dialed in with short-term water and carb manipulation, applied oil, and professional lighting designed for that one shot — not his everyday walking-around condition. What this plan will genuinely do, run consistently, is build real strength, conditioning and a leaner, athletic physique over months — just on a realistic timeline for someone with college, an internship and one training window a day." },
+  { q:"Is 2 hours of training every day too much?",
+    a:"More than you need, yes. Past about 90–100 minutes of focused, intense work, quality drops and recovery starts to suffer — that applies to almost everyone, not just beginners. The structured ~95-minute session in the Workout section fits comfortably inside your window. If time remains, spend it on mobility, stretching or a slow walk rather than more sets. More volume isn't the lever that gets you leaner here — your calorie deficit and consistency are." },
+  { q:"Why is lunch at 11 AM?",
+    a:"Because your day forces it — you leave for office after roughly 11:30 AM and can't eat rotis, hot dal or a full meal there. Front-loading your biggest, highest-protein meal before you leave means you've covered ~35–40g protein and ~600+ kcal before your work day begins. Your office snack is designed to be zero-prep and carry-friendly (boiled eggs, paneer cubes, roasted chana, or dry soya chunks). Your dinner restores the remaining protein and energy after you return." },
+  { q:"Why no whey in this plan?",
+    a:"You don't need it. At ~130–148g protein/day, eggs, paneer, soya chunks, soya chaap, moong dal and full-fat dairy comfortably cover your target — the meal plan is built to hit those numbers without any protein powder." },
+  { q:"How is data saved? Will I lose it?",
+    a:"All your progress entries, water counts, workout checkbox states and settings are saved to your browser's localStorage — they persist as long as you don't clear browser data on that device. To sync across devices (phone + laptop), use the Cloud Sync section: it backs up your data to a private GitHub Gist that only you can see. Pull it on any other device where you've entered your token." },
+  { q:"What if my weight loss stalls?",
+    a:"Expect non-linear weeks — water retention, sleep quality, the monsoon humidity and hormonal fluctuations all move the scale independently of actual fat loss. If your rolling 7-day average weight genuinely stalls for two consecutive weeks with consistent training and diet, drop your target intake by ~150 kcal (cut one roti or reduce rice portion) and reassess in another two weeks before making another change." },
+  { q:"Can I swap meals around?",
+    a:"Yes — the daily protein and calorie totals matter more than the exact meal composition. Swap paneer for soya or eggs for the equivalent protein amount freely across the week. The one thing to keep consistent is the 11 AM major lunch structure on weekdays, since that's built around your schedule constraint." }
 ];
 
-/* ---------------- RENDER: SCHEDULE OVERVIEW ---------------- */
+/* ================================================================
+   RENDER: SCHEDULE OVERVIEW
+================================================================ */
 const scheduleGrid = document.getElementById('scheduleGrid');
 WORKOUT_DAYS.forEach((d)=>{
   const c = document.createElement('div');
@@ -617,12 +1164,14 @@ WORKOUT_DAYS.forEach((d)=>{
   scheduleGrid.appendChild(c);
 });
 
-/* ---------------- RENDER: WORKOUT TABS ---------------- */
+/* ================================================================
+   RENDER: WORKOUT TABS
+================================================================ */
 const wTabs = document.getElementById('workoutTabs');
 const wPanels = document.getElementById('workoutPanels');
 WORKOUT_DAYS.forEach((d,i)=>{
   const tab = document.createElement('button');
-  tab.className='tab'; tab.textContent = d.name.slice(0,3).toUpperCase() + (d.rest? ' •':'');
+  tab.className='tab'; tab.textContent = d.name.slice(0,3).toUpperCase() + (d.rest? ' ·':'');
   tab.dataset.i = i;
   tab.addEventListener('click', ()=>showPanel('workout', i));
   wTabs.appendChild(tab);
@@ -643,7 +1192,7 @@ WORKOUT_DAYS.forEach((d,i)=>{
       <div class="dayhead"><h3>${d.name} — ${d.focus}</h3><span class="time mono">${d.time}</span></div>
       <div class="block"><span class="blocklabel">Warm-up (10 min)</span><ul class="exlist">${d.warmup.map(w=>`<li><span class="exname">${w}</span></li>`).join('')}</ul></div>
       ${blocksHtml}
-      <div class="block"><span class="blocklabel">Cooldown</span><ul class="exlist">${d.cooldown.map(w=>`<li><span class="exname">${w}</span></li>`).join('')}</ul></div>
+      <div class="block"><span class="blocklabel">Cooldown (15 min)</span><ul class="exlist">${d.cooldown.map(w=>`<li><span class="exname">${w}</span></li>`).join('')}</ul></div>
     `;
   }
   wPanels.appendChild(panel);
@@ -657,10 +1206,13 @@ document.addEventListener('change', (e)=>{
     e.target.nextElementSibling.classList.toggle('done', e.target.checked);
   }
 });
-document.querySelectorAll('.chk').forEach(c=>{
-  const val = localStorage.getItem('lp_chk_'+c.dataset.id);
-  if(val === 'true'){ c.checked = true; c.nextElementSibling.classList.add('done'); }
-});
+function loadCheckboxes(){
+  document.querySelectorAll('.chk').forEach(c=>{
+    const val = localStorage.getItem('lp_chk_'+c.dataset.id);
+    if(val === 'true'){ c.checked = true; c.nextElementSibling.classList.add('done'); }
+  });
+}
+loadCheckboxes();
 
 function showPanel(kind, i){
   const tabSel = kind==='workout' ? '#workoutTabs .tab' : '#mealTabs .tab';
@@ -669,7 +1221,9 @@ function showPanel(kind, i){
   document.querySelectorAll(panelSel).forEach(p=>p.classList.toggle('active', +p.dataset.i === i));
 }
 
-/* ---------------- RENDER: MEAL TABS ---------------- */
+/* ================================================================
+   RENDER: MEAL TABS
+================================================================ */
 const mTabs = document.getElementById('mealTabs');
 const mPanels = document.getElementById('mealPanels');
 MEAL_DAYS.forEach((d,i)=>{
@@ -684,26 +1238,31 @@ MEAL_DAYS.forEach((d,i)=>{
   panel.innerHTML = `
     <div class="dayhead"><h3>${d.name}</h3><span class="time mono">${d.subtitle}</span></div>
     ${d.meals.map(m=>`
-      <div class="mealcard">
-        <div class="mealtime">${m[0]} · ${m[1]}</div>
-        <h4>${m[2]}</h4>
-        <div class="macros">${m[3]}</div>
+      <div class="mealcard${m.office ? ' office-meal' : ''}">
+        <div class="mealtime">${m.time} · ${m.label}${m.office ? '<span class="office-badge">office-friendly</span>' : ''}</div>
+        <h4>${m.name}</h4>
+        <div class="items"><ul>${m.items.map(it=>`<li>${it}</li>`).join('')}</ul></div>
+        <div class="macros">${m.macros}</div>
       </div>`).join('')}
     <div class="daytotal"><span>Daily total</span><b>${d.total}</b></div>
   `;
   mPanels.appendChild(panel);
 });
 
-/* ---------------- RENDER: GROCERY ---------------- */
+/* ================================================================
+   RENDER: GROCERY
+================================================================ */
 const grocList = document.getElementById('grocList');
 Object.entries(GROCERY).forEach(([group, items])=>{
   const div = document.createElement('div');
   div.className='grocgroup';
-  div.innerHTML = `<h4>${group}</h4><ul>${items.map(it=>`<li>▢ ${it}</li>`).join('')}</ul>`;
+  div.innerHTML = `<h4>${group}</h4><ul>${items.map(it=>`<li><span>▢ ${it.item}</span><span class="qty">${it.qty}</span></li>`).join('')}</ul>`;
   grocList.appendChild(div);
 });
 
-/* ---------------- RENDER: FAQ ---------------- */
+/* ================================================================
+   RENDER: FAQ
+================================================================ */
 const faqList = document.getElementById('faqList');
 FAQ.forEach(item=>{
   const div = document.createElement('div');
@@ -713,12 +1272,13 @@ FAQ.forEach(item=>{
   faqList.appendChild(div);
 });
 
-/* ---------------- TODAY BAR ---------------- */
+/* ================================================================
+   TODAY BAR
+================================================================ */
 function updateTodayBar(){
   const now = new Date();
   const dow = now.getDay();
   const wd = WORKOUT_DAYS[dow];
-  const md = MEAL_DAYS[dow];
   const dot = document.getElementById('pulseDot');
   dot.classList.toggle('rest', wd.rest);
   document.getElementById('todayLabel').innerHTML = wd.rest
@@ -729,7 +1289,9 @@ function updateTodayBar(){
 }
 updateTodayBar();
 
-/* ---------------- COUNTDOWN ---------------- */
+/* ================================================================
+   COUNTDOWN
+================================================================ */
 (function(){
   let start = localStorage.getItem('lp_start');
   if(!start){ start = new Date().toISOString(); localStorage.setItem('lp_start', start); }
@@ -742,38 +1304,57 @@ updateTodayBar();
   document.getElementById('daysLeftLabel').textContent = daysLeft>0 ? 'Days left in 12-week cycle' : 'Cycle complete — reassess';
 })();
 
-/* ---------------- INTERVAL TIMER ---------------- */
-let timerInterval = null, tRound = 0, tPhase = 'work', tRemaining = 30, tRunning=false;
+/* ================================================================
+   INTERVAL TIMER
+================================================================ */
+let timerInterval = null, tRound = 0, tPhase = 'work', tRemaining = 30, tTotalPhase = 30, tRunning=false;
 const timerDisplay = document.getElementById('timerDisplay');
 const timerStatus = document.getElementById('timerStatus');
+const phaseBarFill = document.getElementById('phaseBarFill');
+
 function fmt(s){ const m = Math.floor(s/60); const sec = s%60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+function updatePhaseBar(){
+  const pct = tTotalPhase > 0 ? (tRemaining / tTotalPhase) * 100 : 100;
+  phaseBarFill.style.width = pct + '%';
+  phaseBarFill.classList.toggle('rest-phase', tPhase === 'rest');
+}
 function tickTimer(){
   tRemaining--;
   if(tRemaining < 0){
     const work = +document.getElementById('workSec').value || 30;
     const rest = +document.getElementById('restSec').value || 30;
     const rounds = +document.getElementById('roundCount').value || 5;
-    if(tPhase === 'work'){ tPhase='rest'; tRemaining = rest; }
-    else { tRound++; if(tRound >= rounds){ stopTimer(); timerStatus.textContent = `Round ${rounds} / ${rounds} · Done!`; timerDisplay.textContent = '00:00'; return; } tPhase='work'; tRemaining = work; }
+    if(tPhase === 'work'){ tPhase='rest'; tRemaining = rest; tTotalPhase = rest; }
+    else { tRound++; if(tRound >= rounds){ stopTimer(); timerStatus.textContent = `Round ${rounds} / ${rounds} · Done! 🎉`; timerDisplay.textContent = '00:00'; phaseBarFill.style.width='100%'; return; } tPhase='work'; tRemaining = work; tTotalPhase = work; }
+    try{ new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBxTzpFZJWnnoxpSzE3Tmt8c2JTTlRSVllYW11fYGFiY2RlZmdn').play().catch(()=>{}); }catch(e){}
   }
   timerDisplay.textContent = fmt(tRemaining);
-  timerStatus.textContent = `Round ${tRound+1} / ${document.getElementById('roundCount').value} · ${tPhase === 'work' ? 'WORK' : 'REST'}`;
+  timerStatus.textContent = `Round ${tRound+1} / ${document.getElementById('roundCount').value} · ${tPhase === 'work' ? '🔥 WORK' : '💤 REST'}`;
+  updatePhaseBar();
 }
 document.getElementById('timerStart').addEventListener('click', ()=>{
   if(tRunning) return;
-  if(tRemaining === 30 && tRound === 0 && tPhase==='work'){ tRemaining = +document.getElementById('workSec').value || 30; }
+  const work = +document.getElementById('workSec').value || 30;
+  if(tRemaining === 30 && tRound === 0 && tPhase==='work'){ tRemaining = work; tTotalPhase = work; }
   tRunning = true;
   timerInterval = setInterval(tickTimer, 1000);
+  updatePhaseBar();
 });
 function stopTimer(){ tRunning=false; clearInterval(timerInterval); }
 document.getElementById('timerPause').addEventListener('click', stopTimer);
 document.getElementById('timerReset').addEventListener('click', ()=>{
-  stopTimer(); tRound=0; tPhase='work'; tRemaining = +document.getElementById('workSec').value || 30;
+  stopTimer(); tRound=0; tPhase='work';
+  tRemaining = +document.getElementById('workSec').value || 30;
+  tTotalPhase = tRemaining;
   timerDisplay.textContent = fmt(tRemaining);
   timerStatus.textContent = 'Round 0 / 0 · Ready';
+  phaseBarFill.style.width = '100%';
+  phaseBarFill.classList.remove('rest-phase');
 });
 
-/* ---------------- WATER TRACKER ---------------- */
+/* ================================================================
+   WATER TRACKER
+================================================================ */
 const waterRow = document.getElementById('waterRow');
 const todayKey = new Date().toISOString().slice(0,10);
 let waterState = JSON.parse(localStorage.getItem('lp_water')||'{}');
@@ -783,16 +1364,19 @@ function renderWater(){
   for(let i=0;i<10;i++){
     const d = document.createElement('div');
     d.className = 'drop' + (i < waterState.filled ? ' filled' : '');
-    d.addEventListener('click', ()=>{ waterState.filled = (i < waterState.filled) ? i : i+1; save(); });
+    d.title = `Glass ${i+1}`;
+    d.addEventListener('click', ()=>{ waterState.filled = (i < waterState.filled) ? i : i+1; saveWater(); });
     waterRow.appendChild(d);
   }
-  document.getElementById('waterCount').textContent = `${waterState.filled} / 10 glasses`;
+  document.getElementById('waterCount').textContent = `${waterState.filled} / 10 glasses (~${waterState.filled * 350}ml of 3,500ml target)`;
 }
-function save(){ localStorage.setItem('lp_water', JSON.stringify(waterState)); renderWater(); }
-document.getElementById('waterReset').addEventListener('click', ()=>{ waterState.filled = 0; save(); });
+function saveWater(){ localStorage.setItem('lp_water', JSON.stringify(waterState)); renderWater(); }
+document.getElementById('waterReset').addEventListener('click', ()=>{ waterState.filled = 0; saveWater(); });
 renderWater();
 
-/* ---------------- PROGRESS TRACKER ---------------- */
+/* ================================================================
+   PROGRESS TRACKER
+================================================================ */
 let entries = JSON.parse(localStorage.getItem('lp_entries') || '[]');
 const tBody = document.getElementById('trackerBody');
 document.getElementById('tDate').valueAsDate = new Date();
@@ -800,8 +1384,9 @@ document.getElementById('tDate').valueAsDate = new Date();
 function renderTable(){
   tBody.innerHTML='';
   entries.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach((e,idx)=>{
+    const fatMass = e.fat ? ((e.fat/100) * e.weight).toFixed(1) + ' kg' : '—';
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${e.date}</td><td>${e.weight} kg</td><td>${e.fat}%</td><td><button class="iconbtn" data-idx="${idx}" title="Delete" style="width:1.8rem;height:1.8rem;">×</button></td>`;
+    tr.innerHTML = `<td>${e.date}</td><td>${e.weight} kg</td><td>${e.fat ? e.fat+'%' : '—'}</td><td>${fatMass}</td><td><button class="iconbtn" data-idx="${idx}" title="Delete" style="width:1.8rem;height:1.8rem;">×</button></td>`;
     tBody.appendChild(tr);
   });
 }
@@ -818,8 +1403,8 @@ function renderChart(){
     type:'line',
     data:{ labels: sorted.map(e=>e.date),
       datasets:[
-        { label:'Weight (kg)', data: sorted.map(e=>e.weight), borderColor: turmeric, backgroundColor:'transparent', tension:0.3, yAxisID:'y' },
-        { label:'Body fat (%)', data: sorted.map(e=>e.fat), borderColor: sage, backgroundColor:'transparent', tension:0.3, yAxisID:'y1' }
+        { label:'Weight (kg)', data: sorted.map(e=>e.weight), borderColor: turmeric, backgroundColor:'transparent', tension:0.3, yAxisID:'y', pointRadius:5, pointHoverRadius:7 },
+        { label:'Body fat (%)', data: sorted.map(e=>e.fat), borderColor: sage, backgroundColor:'transparent', tension:0.3, yAxisID:'y1', pointRadius:5, pointHoverRadius:7 }
       ]},
     options:{ responsive:true, interaction:{mode:'index',intersect:false},
       scales:{ y:{ position:'left', ticks:{color:muted}, grid:{color:'rgba(150,150,150,0.1)'} }, y1:{ position:'right', ticks:{color:muted}, grid:{display:false} }, x:{ ticks:{color:muted}, grid:{display:false} } },
@@ -845,6 +1430,132 @@ tBody.addEventListener('click', (e)=>{
   }
 });
 renderTable(); renderChart();
+
+/* ================================================================
+   CLOUD SYNC — GitHub Gist (free, private, no backend needed)
+   Data stored: progress entries + water state
+   Token stored: localStorage only on this device, never sent anywhere
+   except directly to api.github.com
+================================================================ */
+const GIST_FILENAME = 'lean_protocol_data.json';
+
+function getToken(){ return localStorage.getItem('lp_gh_token') || ''; }
+function getGistId(){ return localStorage.getItem('lp_gist_id') || ''; }
+
+function setSyncStatus(msg, type=''){
+  const el = document.getElementById('syncStatus');
+  el.textContent = msg;
+  el.className = 'sync-status' + (type ? ' '+type : '');
+}
+function setTokenStatus(){
+  const tok = getToken();
+  const status = document.getElementById('tokenStatus');
+  if(tok){
+    status.textContent = 'Token saved ✓ (ends in …'+tok.slice(-4)+')';
+    status.className = 'sync-status ok';
+  } else {
+    status.textContent = 'No token saved yet.';
+    status.className = 'sync-status';
+  }
+}
+setTokenStatus();
+
+// show token if saved
+const ghTokenInput = document.getElementById('ghToken');
+if(getToken()) ghTokenInput.placeholder = '••••••••••••••••••••••••••';
+
+document.getElementById('syncSaveToken').addEventListener('click', ()=>{
+  const val = ghTokenInput.value.trim();
+  if(!val){ alert('Please paste your GitHub token first.'); return; }
+  localStorage.setItem('lp_gh_token', val);
+  ghTokenInput.value = '';
+  ghTokenInput.placeholder = '••••••••••••••••••••••••••';
+  setTokenStatus();
+  setSyncStatus('Token saved. Use Push to back up your data.', 'ok');
+});
+
+document.getElementById('syncClearToken').addEventListener('click', ()=>{
+  if(!confirm('Remove saved token from this device?')) return;
+  localStorage.removeItem('lp_gh_token');
+  ghTokenInput.placeholder = 'ghp_xxxxxxxxxxxxxxxx';
+  setTokenStatus();
+  setSyncStatus('Token cleared.');
+});
+
+function buildPayload(){
+  return {
+    entries: JSON.parse(localStorage.getItem('lp_entries') || '[]'),
+    water: JSON.parse(localStorage.getItem('lp_water') || '{}'),
+    start: localStorage.getItem('lp_start'),
+    exportedAt: new Date().toISOString()
+  };
+}
+
+async function pushToGist(){
+  const token = getToken();
+  if(!token){ setSyncStatus('No token saved. Add your GitHub token first.', 'err'); return; }
+  setSyncStatus('Pushing data…');
+  const payload = JSON.stringify(buildPayload(), null, 2);
+  const gistId = getGistId();
+  try{
+    let res;
+    if(gistId){
+      // update existing gist
+      res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method:'PATCH',
+        headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2022-11-28' },
+        body: JSON.stringify({ files:{ [GIST_FILENAME]: { content: payload } } })
+      });
+    } else {
+      // create new gist
+      res = await fetch('https://api.github.com/gists', {
+        method:'POST',
+        headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2022-11-28' },
+        body: JSON.stringify({ description:'Lean Protocol — Fitness Data', public:false, files:{ [GIST_FILENAME]: { content: payload } } })
+      });
+    }
+    if(!res.ok){ const err = await res.json(); throw new Error(err.message || res.status); }
+    const data = await res.json();
+    localStorage.setItem('lp_gist_id', data.id);
+    setSyncStatus(`✓ Pushed at ${new Date().toLocaleTimeString()}. Gist ID: ${data.id.slice(0,8)}…`, 'ok');
+  } catch(e){
+    setSyncStatus('Push failed: ' + e.message, 'err');
+  }
+}
+
+async function pullFromGist(){
+  const token = getToken();
+  const gistId = getGistId();
+  if(!token){ setSyncStatus('No token saved. Add your GitHub token first.', 'err'); return; }
+  if(!gistId){ setSyncStatus('No Gist ID found. Push data first from another device.', 'err'); return; }
+  setSyncStatus('Pulling data…');
+  try{
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers:{ Authorization:`Bearer ${token}`, 'X-GitHub-Api-Version':'2022-11-28' }
+    });
+    if(!res.ok){ const err = await res.json(); throw new Error(err.message || res.status); }
+    const gist = await res.json();
+    const raw = gist.files[GIST_FILENAME]?.content;
+    if(!raw) throw new Error('File not found in Gist.');
+    const payload = JSON.parse(raw);
+    if(payload.entries) { entries = payload.entries; localStorage.setItem('lp_entries', JSON.stringify(entries)); }
+    if(payload.water) localStorage.setItem('lp_water', JSON.stringify(payload.water));
+    if(payload.start) localStorage.setItem('lp_start', payload.start);
+    renderTable(); renderChart(); renderWater();
+    setSyncStatus(`✓ Pulled at ${new Date().toLocaleTimeString()}. Exported from: ${payload.exportedAt||'unknown'}`, 'ok');
+  } catch(e){
+    setSyncStatus('Pull failed: ' + e.message, 'err');
+  }
+}
+
+document.getElementById('syncPush').addEventListener('click', pushToGist);
+document.getElementById('syncPull').addEventListener('click', pullFromGist);
+
+// quick-sync button in top bar
+document.getElementById('syncBtn').addEventListener('click', ()=>{
+  if(getToken()){ pushToGist(); }
+  else { document.getElementById('sync').scrollIntoView({behavior:'smooth'}); }
+});
 </script>
 </body>
 </html>
