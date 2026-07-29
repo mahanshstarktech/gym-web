@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEAN PROTOCOL — Monsoon Training Cycle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0c2427;
+  --panel:#122f33;
+  --panel-2:#173a3f;
+  --line:rgba(232,229,217,0.12);
+  --text:#f2efe6;
+  --muted:#a9c1bf;
+  --turmeric:#e0a83a;
+  --turmeric-dim:#a97e2c;
+  --paprika:#c9603f;
+  --sage:#7fb08c;
+  --shadow:0 20px 60px rgba(0,0,0,0.35);
+}
+html[data-theme="light"]{
+  --ink:#f4efe2;
+  --panel:#ffffff;
+  --panel-2:#fbf6ea;
+  --line:rgba(20,40,40,0.12);
+  --text:#16302e;
+  --muted:#5b7472;
+  --turmeric:#c07f1e;
+  --turmeric-dim:#8f5f16;
+  --paprika:#b34b2c;
+  --sage:#3f7a52;
+  --shadow:0 20px 50px rgba(20,40,40,0.12);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{
+  font-size: clamp(15px, 0.85vw + 11px, 20.5px);
+  scroll-behavior:smooth;
+}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  line-height:1.55;
+  transition:background .4s ease, color .4s ease;
+  overflow-x:hidden;
+}
+::selection{ background:var(--turmeric); color:#0c2427; }
+a{color:inherit;}
+.wrap{
+  width:100%;
+  padding-left: clamp(1.1rem, 4.5vw, 4.5rem);
+  padding-right: clamp(1.1rem, 4.5vw, 4.5rem);
+}
+h1,h2,h3,.display{
+  font-family:'Bebas Neue', sans-serif;
+  letter-spacing:0.02em;
+  font-weight:400;
+  line-height:0.95;
+}
+.mono{ font-family:'JetBrains Mono', monospace; }
+.eyebrow{
+  font-family:'JetBrains Mono', monospace;
+  text-transform:uppercase;
+  letter-spacing:0.18em;
+  font-size:0.72rem;
+  color:var(--turmeric);
+}
+section{ padding: clamp(2.5rem,6vw,5.5rem) 0; border-bottom:1px solid var(--line); }
+section:last-of-type{ border-bottom:none; }
+
+/* ---------- TODAY BAR ---------- */
+#todaybar{
+  position:sticky; top:0; z-index:60;
+  background:var(--panel-2);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(10px);
+}
+#todaybar .inner{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding: 0.7rem clamp(1.1rem,4.5vw,4.5rem);
+  flex-wrap:wrap;
+}
+#todaybar .left{ display:flex; align-items:center; gap:0.9rem; flex-wrap:wrap; }
+.pulse-dot{
+  width:0.6rem; height:0.6rem; border-radius:50%;
+  background:var(--sage); flex:none;
+  box-shadow:0 0 0 0 rgba(127,176,140,.6);
+  animation:pulse 2.2s infinite;
+}
+.pulse-dot.rest{ background:var(--paprika); box-shadow:0 0 0 0 rgba(201,96,63,.6); animation:pulseRest 2.2s infinite; }
+@keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(127,176,140,.55);} 70%{box-shadow:0 0 0 10px rgba(127,176,140,0);} 100%{box-shadow:0 0 0 0 rgba(127,176,140,0);} }
+@keyframes pulseRest{ 0%{box-shadow:0 0 0 0 rgba(201,96,63,.55);} 70%{box-shadow:0 0 0 10px rgba(201,96,63,0);} 100%{box-shadow:0 0 0 0 rgba(201,96,63,0);} }
+#todaybar .label{ font-size:0.9rem; }
+#todaybar .label b{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); font-weight:700;}
+#todaybar .actions{ display:flex; gap:0.6rem; align-items:center; }
+.iconbtn{
+  background:transparent; border:1px solid var(--line); color:var(--text);
+  border-radius:999px; width:2.3rem; height:2.3rem; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:1rem; transition:.2s;
+}
+.iconbtn:hover{ border-color:var(--turmeric); color:var(--turmeric); }
+.iconbtn:focus-visible, button:focus-visible, .tab:focus-visible, input:focus-visible{
+  outline:2px solid var(--turmeric); outline-offset:2px;
+}
+
+/* ---------- NAV ---------- */
+nav.mainnav{
+  display:flex; gap:clamp(0.9rem,2vw,2rem); padding: 0.9rem clamp(1.1rem,4.5vw,4.5rem);
+  font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em;
+  overflow-x:auto; white-space:nowrap; background:var(--ink); border-bottom:1px solid var(--line);
+}
+nav.mainnav a{ text-decoration:none; color:var(--muted); transition:.2s; padding-bottom:0.2rem; border-bottom:2px solid transparent; }
+nav.mainnav a:hover{ color:var(--text); border-color:var(--turmeric-dim); }
+
+/* ---------- HERO ---------- */
+.hero{ padding-top: clamp(3rem,7vw,6rem); }
+.hero .eyebrow{ margin-bottom:0.8rem; }
+.hero h1{
+  font-size: clamp(3rem, 9vw, 7.5rem);
+  color:var(--text);
+}
+.hero h1 span{ color:var(--turmeric); }
+.hero p.sub{
+  max-width:46em; font-size:clamp(1rem,1.3vw,1.25rem); color:var(--muted); margin-top:1.1rem;
+}
+.hero-grid{
+  margin-top: clamp(2.2rem,4vw,3.5rem);
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(11rem,1fr)); gap:1px;
+  background:var(--line); border:1px solid var(--line); border-radius:1rem; overflow:hidden;
+}
+.stat{ background:var(--panel); padding:clamp(1.1rem,2vw,1.8rem); }
+.stat .num{ font-family:'Bebas Neue'; font-size:clamp(2.2rem,3.4vw,3.2rem); color:var(--turmeric); line-height:1; }
+.stat .lab{ font-family:'JetBrains Mono',monospace; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-top:0.4rem; }
+
+/* pulse divider (signature element) */
+.pulse-divider{ width:100%; height:clamp(2.5rem,6vw,4.5rem); margin:0; display:block; }
+.pulse-divider path{ fill:none; stroke:var(--turmeric-dim); stroke-width:2; }
+.pulse-divider .beat{ stroke:var(--turmeric); }
+
+/* ---------- SECTION HEADS ---------- */
+.sectionhead{ display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:clamp(1.5rem,3vw,2.5rem); }
+.sectionhead h2{ font-size:clamp(2rem,4.5vw,3.6rem); }
+.sectionhead p{ color:var(--muted); max-width:38em; }
+
+/* ---------- CARDS / GRID ---------- */
+.cardgrid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem,1fr)); gap:clamp(1rem,2vw,1.5rem); }
+.card{ background:var(--panel); border:1px solid var(--line); border-radius:1rem; padding:clamp(1.2rem,2vw,1.8rem); box-shadow:var(--shadow); }
+.card h3{ font-size:clamp(1.3rem,2vw,1.8rem); color:var(--turmeric); margin-bottom:0.5rem; }
+.card .big{ font-family:'JetBrains Mono',monospace; font-size:clamp(1.6rem,2.6vw,2.2rem); font-weight:700; }
+.card .note{ color:var(--muted); font-size:0.88rem; margin-top:0.4rem; }
+
+/* ---------- TABS ---------- */
+.tabbar{ display:flex; gap:0.5rem; overflow-x:auto; padding-bottom:0.5rem; margin-bottom:1.4rem; }
+.tab{
+  font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em;
+  background:var(--panel); border:1px solid var(--line); color:var(--muted);
+  padding:0.55rem 0.9rem; border-radius:999px; cursor:pointer; white-space:nowrap; transition:.2s; flex:none;
+}
+.tab.active{ background:var(--turmeric); color:#12241f; border-color:var(--turmeric); font-weight:700; }
+.tab .restflag{ color:var(--paprika); }
+.tab.active .restflag{ color:#12241f; }
+
+.daypanel{ display:none; }
+.daypanel.active{ display:block; animation:fade .35s ease; }
+@keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+.dayhead{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:0.6rem; margin-bottom:1.2rem; }
+.dayhead h3{ font-size:clamp(1.6rem,3vw,2.4rem); }
+.dayhead .time{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); }
+
+.block{ margin-bottom:1.6rem; }
+.block .blocklabel{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.72rem; letter-spacing:0.1em; color:var(--muted); margin-bottom:0.6rem; display:block; }
+.exlist{ list-style:none; }
+.exlist li{
+  display:flex; align-items:center; gap:0.8rem; padding:0.6rem 0; border-bottom:1px dashed var(--line);
+}
+.exlist li:last-child{ border-bottom:none; }
+.exlist .exname{ flex:1; }
+.exlist .exname.done{ opacity:0.45; text-decoration:line-through; }
+.exlist .exmeta{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); font-size:0.85rem; white-space:nowrap; }
+.chk{
+  appearance:none; width:1.15rem; height:1.15rem; border:1.5px solid var(--muted); border-radius:0.3rem; cursor:pointer; flex:none; position:relative;
+}
+.chk:checked{ background:var(--sage); border-color:var(--sage); }
+.chk:checked::after{ content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#0c2427; }
+
+.timebudget{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; }
+.tb-seg{ font-family:'JetBrains Mono',monospace; font-size:0.75rem; background:var(--panel-2); border:1px solid var(--line); padding:0.35rem 0.7rem; border-radius:999px; color:var(--muted); }
+.tb-seg b{ color:var(--turmeric); }
+
+.restcard{ text-align:center; padding:clamp(2rem,5vw,3.5rem) 1rem; }
+.restcard .display{ font-size:clamp(2.5rem,6vw,4.5rem); color:var(--paprika); }
+
+/* meal items */
+.mealtime{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); font-size:0.85rem; margin-bottom:0.2rem; }
+.mealcard{ background:var(--panel); border:1px solid var(--line); border-radius:0.9rem; padding:clamp(1rem,1.8vw,1.4rem); margin-bottom:0.9rem; }
+.mealcard h4{ font-family:'Inter'; font-weight:700; font-size:clamp(1.05rem,1.5vw,1.25rem); margin:0.15rem 0 0.35rem; }
+.mealcard p.items{ color:var(--muted); font-size:0.95rem; }
+.mealcard .macros{ font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--sage); margin-top:0.5rem; }
+.daytotal{ margin-top:1rem; padding:1rem 1.2rem; background:var(--panel-2); border-radius:0.9rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; font-family:'JetBrains Mono',monospace; }
+.daytotal b{ color:var(--turmeric); }
+
+/* grocery */
+.groclist{ display:grid; grid-template-columns:repeat(auto-fit,minmax(13rem,1fr)); gap:1rem; }
+.grocgroup h4{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.08em; color:var(--turmeric); margin-bottom:0.5rem; }
+.grocgroup ul{ list-style:none; color:var(--muted); font-size:0.92rem; }
+.grocgroup li{ padding:0.25rem 0; }
+
+/* timer */
+.timerwrap{ display:flex; flex-wrap:wrap; gap:clamp(1.5rem,4vw,3rem); align-items:center; }
+.timerdisplay{ font-family:'JetBrains Mono',monospace; font-size:clamp(3rem,7vw,5.5rem); color:var(--turmeric); letter-spacing:0.02em; }
+.timerctrls{ display:flex; gap:0.6rem; flex-wrap:wrap; }
+.btn{
+  font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.78rem; letter-spacing:0.06em;
+  background:var(--turmeric); color:#12241f; border:none; padding:0.7rem 1.3rem; border-radius:999px; cursor:pointer; font-weight:700; transition:.2s;
+}
+.btn:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(224,168,58,0.3); }
+.btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--line); }
+.btn.ghost:hover{ border-color:var(--turmeric); color:var(--turmeric); transform:none; box-shadow:none; }
+.timerfield{ display:flex; flex-direction:column; gap:0.3rem; }
+.timerfield label{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; color:var(--muted); }
+.timerfield input{ width:5rem; background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:0.5rem; border-radius:0.5rem; font-family:'JetBrains Mono',monospace; }
+
+/* water */
+.waterrow{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; }
+.drop{ width:2.6rem; height:2.6rem; border-radius:50% 50% 50% 0; transform:rotate(45deg); background:var(--panel-2); border:1.5px solid var(--line); cursor:pointer; transition:.2s; }
+.drop.filled{ background:var(--turmeric); border-color:var(--turmeric); }
+
+/* tracker */
+.trackform{ display:flex; gap:0.8rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1.5rem; }
+.trackform .field{ display:flex; flex-direction:column; gap:0.3rem; }
+.trackform label{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; color:var(--muted); }
+.trackform input{ background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:0.6rem 0.7rem; border-radius:0.5rem; font-family:'JetBrains Mono',monospace; width:9rem; }
+table.trackerlog{ width:100%; border-collapse:collapse; font-family:'JetBrains Mono',monospace; font-size:0.85rem; margin-top:1rem; }
+table.trackerlog th, table.trackerlog td{ text-align:left; padding:0.5rem 0.7rem; border-bottom:1px solid var(--line); }
+table.trackerlog th{ color:var(--muted); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.08em; }
+canvas#progchart{ width:100%; max-height:22rem; margin-top:1rem; }
+
+/* faq */
+.faqitem{ border-bottom:1px solid var(--line); padding:1.1rem 0; }
+.faqq{ display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:1rem; }
+.faqq h4{ font-size:clamp(1.05rem,1.6vw,1.3rem); font-weight:700; }
+.faqq .plus{ font-family:'JetBrains Mono',monospace; color:var(--turmeric); font-size:1.3rem; transition:.25s; flex:none; }
+.faqitem.open .plus{ transform:rotate(45deg); }
+.faqa{ max-height:0; overflow:hidden; transition:max-height .35s ease; color:var(--muted); }
+.faqitem.open .faqa{ max-height:30rem; padding-top:0.8rem; }
+
+/* season note */
+.seasonbanner{ display:flex; gap:1rem; align-items:center; background:var(--panel-2); border:1px solid var(--line); border-left:4px solid var(--turmeric); border-radius:0.7rem; padding:1rem 1.3rem; margin-bottom:2rem; flex-wrap:wrap; }
+.seasonbanner .tag{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.7rem; color:var(--turmeric); letter-spacing:0.08em; }
+
+footer{ padding: clamp(2rem,5vw,3.5rem) 0; text-align:center; color:var(--muted); font-size:0.85rem; }
+footer .btn{ margin-top:1rem; }
+
+@media print{
+  #todaybar, nav.mainnav, .timerwrap, .waterrow, .btn, .tabbar{ display:none !important; }
+  .daypanel{ display:block !important; }
+  body{ background:#fff; color:#000; }
+}
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="todaybar">
+  <div class="inner wrap" style="padding-left:0;padding-right:0;">
+    <div class="left">
+      <span class="pulse-dot" id="pulseDot"></span>
+      <span class="label" id="todayLabel">Loading today's session…</span>
+    </div>
+    <div class="actions">
+      <button class="iconbtn" id="themeToggle" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
+      <button class="iconbtn" id="printBtn" title="Print / Save PDF" aria-label="Print plan">⎙</button>
+    </div>
+  </div>
+</div>
+
+<nav class="mainnav">
+  <a href="#overview">Overview</a>
+  <a href="#schedule">Schedule</a>
+  <a href="#workout">Workout</a>
+  <a href="#timer">Interval Timer</a>
+  <a href="#meals">Meals</a>
+  <a href="#grocery">Grocery List</a>
+  <a href="#tracker">Progress</a>
+  <a href="#water">Water</a>
+  <a href="#faq">Reality Check</a>
+</nav>
+
+<header class="hero wrap">
+  <span class="eyebrow">Personal training cycle · Udaipur, Rajasthan</span>
+  <h1>LEAN<br><span>PROTOCOL</span></h1>
+  <p class="sub">A monsoon-season cutting cycle built around your numbers: gymnastics-rooted strength and conditioning, six training days a week, and an eggetarian home-kitchen diet running on paneer, soya and eggs — no whey required.</p>
+
+  <div class="hero-grid">
+    <div class="stat"><div class="num">72<span style="font-size:1.3rem;">kg</span></div><div class="lab">Current weight</div></div>
+    <div class="stat"><div class="num">16.6<span style="font-size:1.3rem;">%</span></div><div class="lab">Current body fat</div></div>
+    <div class="stat"><div class="num">~12<span style="font-size:1.3rem;">%</span></div><div class="lab">Target body fat</div></div>
+    <div class="stat"><div class="num mono" id="daysLeft">--</div><div class="lab" id="daysLeftLabel">Days into cycle</div></div>
+  </div>
+</header>
+
+<svg class="pulse-divider" viewBox="0 0 1200 60" preserveAspectRatio="none">
+  <path d="M0,30 L300,30 L330,10 L350,50 L370,30 L1200,30" class="beat"/>
+</svg>
+
+<section id="overview">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div>
+        <h2>The Numbers</h2>
+        <p>Your intake is set around a moderate deficit — enough to lean out steadily while keeping the muscle you already have.</p>
+      </div>
+    </div>
+    <div class="cardgrid">
+      <div class="card"><h3>BMR</h3><div class="big">1,676 kcal</div><div class="note">Calories your body burns at rest.</div></div>
+      <div class="card"><h3>Maintenance (TDEE)</h3><div class="big">~2,680 kcal</div><div class="note">Estimated for 6 training days/week.</div></div>
+      <div class="card"><h3>Daily Target</h3><div class="big">~2,180 kcal</div><div class="note">≈500 kcal deficit → ~0.4–0.5 kg fat loss/week.</div></div>
+      <div class="card"><h3>Protein</h3><div class="big">~140 g</div><div class="note">From paneer, soya, eggs, dals &amp; dairy — no whey needed.</div></div>
+      <div class="card"><h3>Fat / Carbs</h3><div class="big">60g / 265g</div><div class="note">Enough carbs to fuel morning and evening sessions.</div></div>
+      <div class="card"><h3>Fat to lose</h3><div class="big">~3.5–4 kg</div><div class="note">To reach ~12% body fat while holding ~60 kg lean mass.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="schedule">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Weekly Schedule</h2><p>Built around your real training windows — mornings Mon–Thu, evenings Fri–Sat, full rest Sunday.</p></div>
+    </div>
+    <div class="cardgrid" id="scheduleGrid"></div>
+  </div>
+</section>
+
+<section id="workout">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Workout Plan</h2><p>Gymnastics-based strength, circuits and boxing conditioning — the same training philosophy behind the Spider-Man prep, scaled to your window.</p></div>
+    </div>
+    <div class="card" style="margin-bottom:2rem;">
+      <h3>Your 2-hour block, budgeted</h3>
+      <p class="note" style="margin-bottom:0;">You don't need to fill the full 1.5–2 hours with hard training. Past ~90–100 minutes of intense work, returns drop and recovery suffers — that's true even for actors on a movie prep. Use the rest of the window for mobility, not more sets.</p>
+      <div class="timebudget">
+        <span class="tb-seg"><b>10 min</b> warm-up &amp; joint mobility</span>
+        <span class="tb-seg"><b>55–65 min</b> main session (lifts / circuit / boxing)</span>
+        <span class="tb-seg"><b>10 min</b> core finisher</span>
+        <span class="tb-seg"><b>15 min</b> cooldown &amp; stretch</span>
+        <span class="tb-seg">= <b>~95 min</b> hard budget, rest of window optional light mobility</span>
+      </div>
+    </div>
+
+    <div class="tabbar" id="workoutTabs"></div>
+    <div id="workoutPanels"></div>
+  </div>
+</section>
+
+<section id="timer">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Interval Timer</h2><p>For circuit, HIIT and boxing days — set work/rest and rounds, then go.</p></div>
+    </div>
+    <div class="card">
+      <div class="timerwrap">
+        <div class="timerdisplay mono" id="timerDisplay">00:30</div>
+        <div class="timerctrls">
+          <div class="timerfield"><label>Work (sec)</label><input type="number" id="workSec" value="30" min="5"></div>
+          <div class="timerfield"><label>Rest (sec)</label><input type="number" id="restSec" value="30" min="5"></div>
+          <div class="timerfield"><label>Rounds</label><input type="number" id="roundCount" value="5" min="1"></div>
+        </div>
+        <div class="timerctrls">
+          <button class="btn" id="timerStart">Start</button>
+          <button class="btn ghost" id="timerPause">Pause</button>
+          <button class="btn ghost" id="timerReset">Reset</button>
+        </div>
+      </div>
+      <div class="note" id="timerStatus" style="margin-top:1rem;">Round 0 / 0 · Ready</div>
+    </div>
+  </div>
+</section>
+
+<section id="meals">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Meal Plan</h2><p>Home-cooked, eggetarian, rotating paneer, soya and eggs across the week. Adjusted for monsoon season.</p></div>
+    </div>
+    <div class="seasonbanner">
+      <span class="tag">Monsoon note</span>
+      <span>Humidity is high right now, so meals lean on cooked vegetables over raw salads, ginger–turmeric for digestion and immunity, and boiled/filtered water throughout the day. Bhindi, lauki, turai, corn and moong dal are all in season.</span>
+    </div>
+    <div class="tabbar" id="mealTabs"></div>
+    <div id="mealPanels"></div>
+  </div>
+</section>
+
+<section id="grocery">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Weekly Grocery List</h2><p>Everything the week's meals need, grouped by aisle.</p></div>
+    </div>
+    <div class="card">
+      <div class="groclist" id="grocList"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tracker">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Progress Tracker</h2><p>Log your weekly weigh-in. Stored only on this device.</p></div>
+    </div>
+    <div class="card">
+      <div class="trackform">
+        <div class="field"><label>Date</label><input type="date" id="tDate"></div>
+        <div class="field"><label>Weight (kg)</label><input type="number" step="0.1" id="tWeight" placeholder="72.0"></div>
+        <div class="field"><label>Body fat (%)</label><input type="number" step="0.1" id="tFat" placeholder="16.6"></div>
+        <button class="btn" id="tAdd">Add Entry</button>
+      </div>
+      <canvas id="progchart" height="260"></canvas>
+      <table class="trackerlog" id="trackerTable">
+        <thead><tr><th>Date</th><th>Weight</th><th>Body Fat</th><th></th></tr></thead>
+        <tbody id="trackerBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="water">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Hydration</h2><p>Target ~3.5L on training days, higher in this heat and humidity. Tap a drop as you finish a glass.</p></div>
+    </div>
+    <div class="card">
+      <div class="big mono" id="waterCount">0 / 10 glasses</div>
+      <div class="waterrow" id="waterRow"></div>
+      <button class="btn ghost" id="waterReset" style="margin-top:1.2rem;">Reset today</button>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div><h2>Reality Check</h2><p>Straight answers before you start.</p></div>
+    </div>
+    <div id="faqList"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Built for a 12-week monsoon cutting cycle. Re-check your body composition every 3–4 weeks and adjust the target calories by ±150 if progress stalls for two weeks straight. This is general fitness guidance, not medical advice.</p>
+    <button class="btn" id="printBtn2">Print / Save as PDF</button>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+/* ---------------- THEME ---------------- */
+const root = document.documentElement;
+const savedTheme = localStorage.getItem('lp_theme');
+if(savedTheme) root.setAttribute('data-theme', savedTheme);
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  root.setAttribute('data-theme', cur);
+  localStorage.setItem('lp_theme', cur);
+  if(window.progChart) renderChart();
+});
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+document.getElementById('printBtn2').addEventListener('click', ()=>window.print());
+
+/* ---------------- DATA ---------------- */
+// index 0..6 = Sunday..Saturday, matching Date.getDay()
+const WORKOUT_DAYS = [
+  { name:"Sunday", time:"Rest Day", focus:"Full Recovery", rest:true,
+    note:"No structured training. Optional 15–20 min gentle walk or stretching. Sleep is the priority today — this is when the muscle you trained all week actually rebuilds." },
+  { name:"Monday", time:"6:30 – 8:30 AM", focus:"Push Strength + Core", rest:false,
+    warmup:["Jump rope – 3 min","Arm circles & shoulder CARs – 1 min/side","Bodyweight squats – 15 reps","Push-up to downdog – 8 reps"],
+    blocks:[
+      { label:"Main Lifts", ex:[["Push-ups (standard/decline/diamond)","4 × 15–20"],["Dumbbell shoulder press","4 × 10"],["Incline dumbbell press","3 × 10"],["Dips (bench or bar)","3 × 12"]] },
+      { label:"Core Finisher", ex:[["Plank-to-push-up","3 × 12"],["Hanging or lying leg raises","3 × 15"]] }
+    ],
+    cooldown:["Chest doorway stretch – 45 sec/side","Child's pose – 1 min","Shoulder cross-body stretch – 30 sec/side"] },
+  { name:"Tuesday", time:"6:30 – 8:30 AM", focus:"Conditioning Circuit (HIIT)", rest:false,
+    warmup:["Jump rope – 3 min","High knees – 30 sec","Dynamic lunges – 10/side","Hip openers – 1 min"],
+    blocks:[
+      { label:"Circuit — 4–5 rounds, 30s work / 30s rest", ex:[["Burpees","30 sec"],["Mountain climbers","30 sec"],["Jump squats","30 sec"],["Jump rope","30 sec"],["Plank hold","30 sec"]] },
+      { label:"Finisher", ex:[["Steady jog or incline walk","10–15 min"]] }
+    ],
+    cooldown:["Standing quad stretch – 30 sec/side","Seated hamstring stretch – 45 sec/side","Deep breathing – 1 min"] },
+  { name:"Wednesday", time:"6:30 – 8:30 AM", focus:"Pull Strength + Core", rest:false,
+    warmup:["Band pull-aparts – 15 reps","Cat-cow – 1 min","Scapular pull-ups – 10 reps","Jump rope – 2 min"],
+    blocks:[
+      { label:"Main Lifts", ex:[["Pull-ups (assisted if needed)","4 × 8–10"],["Bent-over dumbbell rows","4 × 10"],["Face pulls (band/cable)","3 × 15"],["Bicep curls","3 × 12"]] },
+      { label:"Core Finisher", ex:[["Russian twists","3 × 20"],["Hollow body hold","3 × 30 sec"]] }
+    ],
+    cooldown:["Lat stretch on wall – 45 sec/side","Bicep/forearm stretch – 30 sec/side","Spinal twist – 45 sec/side"] },
+  { name:"Thursday", time:"6:30 – 8:30 AM", focus:"Legs + Core", rest:false,
+    warmup:["Bodyweight squats – 15 reps","Leg swings – 10/side","Walking lunges – 10/side","Ankle circles – 30 sec/side"],
+    blocks:[
+      { label:"Main Lifts", ex:[["Goblet / bodyweight squats","4 × 12"],["Bulgarian split squats","3 × 10/leg"],["Romanian deadlifts","3 × 10"],["Jump squats or box jumps","3 × 10"]] },
+      { label:"Core Finisher", ex:[["Calf raises","3 × 15"],["Plank variations","3 × 45 sec"]] }
+    ],
+    cooldown:["Standing quad stretch – 30 sec/side","Figure-4 glute stretch – 45 sec/side","Calf stretch on wall – 30 sec/side"] },
+  { name:"Friday", time:"Evening, ~6:00 – 8:00 PM", focus:"Boxing / HIIT", rest:false,
+    warmup:["Shadow boxing – 3 min easy pace","Arm circles & wrist rolls – 1 min","Jump rope – 2 min"],
+    blocks:[
+      { label:"Boxing Conditioning", ex:[["Heavy bag or shadow boxing","4 × 3 min rounds"],["Jump rope intervals","5 min"],["Sprint intervals","10 × 20 sec on / 40 sec off"]] },
+      { label:"Ab Finisher — 3 rounds", ex:[["Bicycle crunches","20 reps"],["Leg raises","15 reps"]] }
+    ],
+    cooldown:["Hip flexor stretch – 45 sec/side","Shoulder & chest stretch – 45 sec","Slow walk – 3 min"] },
+  { name:"Saturday", time:"Evening, ~6:00 – 8:00 PM", focus:"Full-Body Circuit + Mobility", rest:false,
+    warmup:["Jump rope – 3 min","World's greatest stretch – 5/side","Bodyweight squats – 15 reps"],
+    blocks:[
+      { label:"Full-Body Circuit — 3–4 rounds", ex:[["Push-ups","15 reps"],["Bodyweight squats","20 reps"],["Inverted rows or rows","12 reps"],["Plank","45 sec"]] },
+      { label:"Mobility Block (gymnastics-style)", ex:[["Deep squat hold","2 × 1 min"],["Shoulder dislocates (band/towel)","2 × 10"],["Bridge hold","2 × 30 sec"]] }
+    ],
+    cooldown:["Full-body stretch flow – 10 min","Box breathing – 2 min"] }
+];
+
+const MEAL_DAYS = [
+  { name:"Sunday", subtitle:"Rest day — home-style Sunday meal, still on plan",
+    meals:[
+      ["7:30 AM","Breakfast","Stuffed paneer paratha (1, light ghee) with curd","18g protein · ~380 kcal"],
+      ["10:30 AM","Mid-Morning","Fruit bowl — pomegranate, pear, seasonal jamun + a small handful of nuts","6g protein · ~180 kcal"],
+      ["1:30 PM","Lunch","Rajma or soya biryani, cucumber-onion salad, curd","28g protein · ~620 kcal"],
+      ["5:00 PM","Evening","Roasted makhana (fox nuts) + masala chai","6g protein · ~160 kcal"],
+      ["8:30 PM","Dinner","Light moong dal soup, sautéed seasonal veg, 1 roti","20g protein · ~420 kcal"],
+      ["9:45 PM","Before Bed","Warm turmeric milk (haldi doodh)","7g protein · ~130 kcal"]
+    ], total:"≈2,250 kcal · ~85g protein (lighter, relaxed rest-day meal)" },
+  { name:"Monday", subtitle:"Post-Push-Day refuel",
+    meals:[
+      ["6:00 AM","Pre-Workout","Soaked almonds (6) + walnuts (2) + warm water with lemon","4g protein · ~110 kcal"],
+      ["8:45 AM","Breakfast","Masala egg bhurji (3 eggs) with onion-tomato-capsicum + 2 besan chillas + curd","35g protein · ~520 kcal"],
+      ["11:00 AM","Mid-Morning","Roasted soya chunks chaat (50g dry) with cucumber, lemon, chaat masala","26g protein · ~260 kcal"],
+      ["1:30 PM","Lunch","2 multigrain rotis, paneer bhurji (100g), moong dal, lauki sabzi, curd, salad","35g protein · ~560 kcal"],
+      ["5:00 PM","Evening","Sprouts chaat (moong + chana, 1 cup) + green tea","12g protein · ~180 kcal"],
+      ["8:00 PM","Dinner","Soya chaap tikka (100g), sautéed bhindi, 1 roti, curd","30g protein · ~460 kcal"],
+      ["9:30 PM","Before Bed","Warm turmeric milk","7g protein · ~130 kcal"]
+    ], total:"≈2,220 kcal · ~149g protein" },
+  { name:"Tuesday", subtitle:"HIIT day fuel — quicker digesting breakfast",
+    meals:[
+      ["6:00 AM","Pre-Workout","3 dates + soaked almonds","3g protein · ~140 kcal"],
+      ["8:45 AM","Breakfast","Vegetable poha with roasted peanuts + 2 boiled eggs","24g protein · ~480 kcal"],
+      ["11:00 AM","Mid-Morning","Pan-toasted paneer cubes (75g) with chaat masala + herbal tea","14g protein · ~200 kcal"],
+      ["1:30 PM","Lunch","Soya chunk curry (60g dry), 2 rotis, turai sabzi, curd, salad","32g protein · ~540 kcal"],
+      ["5:00 PM","Evening","Roasted chana (½ cup) + tea","10g protein · ~160 kcal"],
+      ["8:00 PM","Dinner","Egg curry (2 eggs), small bowl jeera rice, cucumber raita","22g protein · ~480 kcal"],
+      ["9:30 PM","Before Bed","Warm plain milk","7g protein · ~110 kcal"]
+    ], total:"≈2,110 kcal · ~112g protein" },
+  { name:"Wednesday", subtitle:"Post-Pull-Day refuel",
+    meals:[
+      ["6:00 AM","Pre-Workout","Walnuts + half a banana","3g protein · ~120 kcal"],
+      ["8:45 AM","Breakfast","2 besan cheelas stuffed with paneer + curd","26g protein · ~460 kcal"],
+      ["11:00 AM","Mid-Morning","2 boiled eggs + cucumber sticks","13g protein · ~160 kcal"],
+      ["1:30 PM","Lunch","Moong dal, 2 rotis, bhindi sabzi, small soya pulao, salad","30g protein · ~560 kcal"],
+      ["5:00 PM","Evening","Sprouts and lemon chaat","10g protein · ~150 kcal"],
+      ["8:00 PM","Dinner","Paneer tikka (100g), sautéed spinach, 1 roti","28g protein · ~440 kcal"],
+      ["9:30 PM","Before Bed","Warm turmeric milk","7g protein · ~130 kcal"]
+    ], total:"≈2,020 kcal · ~117g protein" },
+  { name:"Thursday", subtitle:"Post-Leg-Day refuel",
+    meals:[
+      ["6:00 AM","Pre-Workout","Almonds + 2 dates","3g protein · ~130 kcal"],
+      ["8:45 AM","Breakfast","3-egg omelette with veggies + multigrain toast","24g protein · ~450 kcal"],
+      ["11:00 AM","Mid-Morning","Roasted soya chunks + a pear or pomegranate","22g protein · ~230 kcal"],
+      ["1:30 PM","Lunch","Paneer bhurji, 2 rotis, lauki-chana dal, curd, salad","34g protein · ~560 kcal"],
+      ["5:00 PM","Evening","Buttermilk (chaas) + roasted makhana","8g protein · ~150 kcal"],
+      ["8:00 PM","Dinner","Soya chaap curry, small jeera rice, salad","28g protein · ~460 kcal"],
+      ["9:30 PM","Before Bed","Warm plain milk","7g protein · ~110 kcal"]
+    ], total:"≈2,090 kcal · ~126g protein" },
+  { name:"Friday", subtitle:"Evening boxing session — light, easily-digested day meals",
+    meals:[
+      ["7:30 AM","Breakfast","Oats porridge cooked in milk + 2 boiled eggs","20g protein · ~420 kcal"],
+      ["10:30 AM","Mid-Morning","1 light paneer paratha + curd","16g protein · ~360 kcal"],
+      ["1:00 PM","Lunch","Moong dal khichdi with veggies + curd (easy to digest before training)","18g protein · ~440 kcal"],
+      ["4:30 PM","Pre-Workout","Banana + roasted chana","8g protein · ~180 kcal"],
+      ["8:30 PM","Post-Workout Dinner","Soya chunk masala, 2 rotis, salad","30g protein · ~500 kcal"],
+      ["9:45 PM","Before Bed","Warm turmeric milk","7g protein · ~130 kcal"]
+    ], total:"≈2,030 kcal · ~99g protein" },
+  { name:"Saturday", subtitle:"Evening full-body session",
+    meals:[
+      ["7:30 AM","Breakfast","Vegetable daliya (broken wheat porridge) + 2 boiled eggs","18g protein · ~400 kcal"],
+      ["10:30 AM","Mid-Morning","Roasted soya nuts + a piece of fruit","20g protein · ~220 kcal"],
+      ["1:00 PM","Lunch","Paneer curry, 2 rotis, seasonal corn-veg sabzi, salad","30g protein · ~560 kcal"],
+      ["4:30 PM","Pre-Workout","Dates + almonds","4g protein · ~150 kcal"],
+      ["8:30 PM","Post-Workout Dinner","Egg curry (2 eggs), jeera rice, cucumber raita","22g protein · ~470 kcal"],
+      ["9:45 PM","Before Bed","Warm plain milk","7g protein · ~110 kcal"]
+    ], total:"≈2,120 kcal · ~101g protein" }
+];
+
+const GROCERY = {
+  "Protein": ["Eggs (2 dozen/week)","Paneer (~700g/week)","Soya chunks / nutrela (500g pack)","Soya chaap (fresh, 300g)","Moong dal, chana dal, toor dal"],
+  "Dairy": ["Milk (for cooking + bedtime)","Curd / dahi (daily)","Ghee (small quantity)"],
+  "Vegetables (monsoon-season)": ["Bhindi (okra)","Lauki (bottle gourd)","Turai (ridge gourd)","Spinach (cooked, not raw)","Seasonal corn (bhutta)","Onion, tomato, capsicum, cucumber","Ginger & garlic"],
+  "Grains & Pantry": ["Multigrain atta","Poha","Besan (gram flour)","Broken wheat (daliya)","Rice (small quantities)","Oats"],
+  "Nuts, Fruit & Extras": ["Almonds, walnuts","Dates","Roasted chana","Makhana (fox nuts)","Seasonal fruit — pomegranate, pear, jamun","Turmeric, chaat masala, cumin"]
+};
+
+const FAQ = [
+  { q:"Will this exact workout give me Tom Holland's body?", a:"Not on its own, realistically — and that's worth being honest about. His training for a role is his full-time job for months: multiple sessions a day, a personal trainer, a private chef, and recovery support like physio and massage that most people don't have access to. On top of that, the leanest 'shirtless scene' look actors show on camera is often achieved with short-term water and carb manipulation, oiling and lighting for that one shot — not their everyday walking-around condition. What this plan will genuinely do, if you run it consistently, is build real strength, conditioning and a leaner, athletic physique over months — just on a realistic timeline for someone with classes, an internship and one training window a day, not a movie budget." },
+  { q:"Is 2 hours of training every day too much?", a:"Probably more than you need. Past about 90–100 minutes of focused, intense work, quality drops and recovery starts to suffer — that applies to almost everyone, not just beginners. Use the structured ~95-minute session in the Workout section, and if you still have time left in your window, spend it on mobility, stretching or a slow walk rather than more sets. More volume isn't the lever that gets you leaner here — your calorie deficit and consistency are." },
+  { q:"Why no whey in this plan?", a:"You don't need it. At ~140g protein/day, eggs, paneer, soya chunks/chaap, dals and dairy comfortably cover your target — the meal plan is built to hit that number without any protein powder." },
+  { q:"What if my weight loss stalls?", a:"Expect non-linear weeks — water retention, sleep and the monsoon humidity all move the scale independently of fat loss. If your weekly average genuinely stalls for two weeks straight, drop your target intake by ~150 kcal and reassess in another two weeks, rather than reacting to a single day's number." },
+  { q:"Can I swap meals around?", a:"Yes — the daily protein and calorie totals matter more than the exact meal. Swap paneer for soya or eggs for the equivalent protein amount freely across the week." }
+];
+
+/* ---------------- RENDER: SCHEDULE OVERVIEW ---------------- */
+const scheduleGrid = document.getElementById('scheduleGrid');
+WORKOUT_DAYS.forEach((d)=>{
+  const c = document.createElement('div');
+  c.className='card';
+  c.innerHTML = `<h3>${d.name}</h3><div class="big" style="font-size:1.1rem;">${d.focus}</div><div class="note">${d.time}</div>`;
+  scheduleGrid.appendChild(c);
+});
+
+/* ---------------- RENDER: WORKOUT TABS ---------------- */
+const wTabs = document.getElementById('workoutTabs');
+const wPanels = document.getElementById('workoutPanels');
+WORKOUT_DAYS.forEach((d,i)=>{
+  const tab = document.createElement('button');
+  tab.className='tab'; tab.textContent = d.name.slice(0,3).toUpperCase() + (d.rest? ' •':'');
+  tab.dataset.i = i;
+  tab.addEventListener('click', ()=>showPanel('workout', i));
+  wTabs.appendChild(tab);
+
+  const panel = document.createElement('div');
+  panel.className='daypanel'; panel.dataset.i = i;
+  if(d.rest){
+    panel.innerHTML = `<div class="card restcard"><div class="display">REST</div><p style="margin-top:0.8rem;color:var(--muted);">${d.note}</p></div>`;
+  } else {
+    let blocksHtml = d.blocks.map((b,bi)=>`
+      <div class="block">
+        <span class="blocklabel">${b.label}</span>
+        <ul class="exlist">
+          ${b.ex.map((e,ei)=>`<li><input type="checkbox" class="chk" data-id="wk-${i}-${bi}-${ei}"><span class="exname">${e[0]}</span><span class="exmeta">${e[1]}</span></li>`).join('')}
+        </ul>
+      </div>`).join('');
+    panel.innerHTML = `
+      <div class="dayhead"><h3>${d.name} — ${d.focus}</h3><span class="time mono">${d.time}</span></div>
+      <div class="block"><span class="blocklabel">Warm-up (10 min)</span><ul class="exlist">${d.warmup.map(w=>`<li><span class="exname">${w}</span></li>`).join('')}</ul></div>
+      ${blocksHtml}
+      <div class="block"><span class="blocklabel">Cooldown</span><ul class="exlist">${d.cooldown.map(w=>`<li><span class="exname">${w}</span></li>`).join('')}</ul></div>
+    `;
+  }
+  wPanels.appendChild(panel);
+});
+
+/* checkbox persistence */
+document.addEventListener('change', (e)=>{
+  if(e.target.classList.contains('chk')){
+    const id = e.target.dataset.id;
+    localStorage.setItem('lp_chk_'+id, e.target.checked);
+    e.target.nextElementSibling.classList.toggle('done', e.target.checked);
+  }
+});
+document.querySelectorAll('.chk').forEach(c=>{
+  const val = localStorage.getItem('lp_chk_'+c.dataset.id);
+  if(val === 'true'){ c.checked = true; c.nextElementSibling.classList.add('done'); }
+});
+
+function showPanel(kind, i){
+  const tabSel = kind==='workout' ? '#workoutTabs .tab' : '#mealTabs .tab';
+  const panelSel = kind==='workout' ? '#workoutPanels .daypanel' : '#mealPanels .daypanel';
+  document.querySelectorAll(tabSel).forEach(t=>t.classList.toggle('active', +t.dataset.i === i));
+  document.querySelectorAll(panelSel).forEach(p=>p.classList.toggle('active', +p.dataset.i === i));
+}
+
+/* ---------------- RENDER: MEAL TABS ---------------- */
+const mTabs = document.getElementById('mealTabs');
+const mPanels = document.getElementById('mealPanels');
+MEAL_DAYS.forEach((d,i)=>{
+  const tab = document.createElement('button');
+  tab.className='tab'; tab.textContent = d.name.slice(0,3).toUpperCase();
+  tab.dataset.i = i;
+  tab.addEventListener('click', ()=>showPanel('meal', i));
+  mTabs.appendChild(tab);
+
+  const panel = document.createElement('div');
+  panel.className='daypanel'; panel.dataset.i = i;
+  panel.innerHTML = `
+    <div class="dayhead"><h3>${d.name}</h3><span class="time mono">${d.subtitle}</span></div>
+    ${d.meals.map(m=>`
+      <div class="mealcard">
+        <div class="mealtime">${m[0]} · ${m[1]}</div>
+        <h4>${m[2]}</h4>
+        <div class="macros">${m[3]}</div>
+      </div>`).join('')}
+    <div class="daytotal"><span>Daily total</span><b>${d.total}</b></div>
+  `;
+  mPanels.appendChild(panel);
+});
+
+/* ---------------- RENDER: GROCERY ---------------- */
+const grocList = document.getElementById('grocList');
+Object.entries(GROCERY).forEach(([group, items])=>{
+  const div = document.createElement('div');
+  div.className='grocgroup';
+  div.innerHTML = `<h4>${group}</h4><ul>${items.map(it=>`<li>▢ ${it}</li>`).join('')}</ul>`;
+  grocList.appendChild(div);
+});
+
+/* ---------------- RENDER: FAQ ---------------- */
+const faqList = document.getElementById('faqList');
+FAQ.forEach(item=>{
+  const div = document.createElement('div');
+  div.className='faqitem';
+  div.innerHTML = `<div class="faqq"><h4>${item.q}</h4><span class="plus">+</span></div><div class="faqa">${item.a}</div>`;
+  div.querySelector('.faqq').addEventListener('click', ()=>div.classList.toggle('open'));
+  faqList.appendChild(div);
+});
+
+/* ---------------- TODAY BAR ---------------- */
+function updateTodayBar(){
+  const now = new Date();
+  const dow = now.getDay();
+  const wd = WORKOUT_DAYS[dow];
+  const md = MEAL_DAYS[dow];
+  const dot = document.getElementById('pulseDot');
+  dot.classList.toggle('rest', wd.rest);
+  document.getElementById('todayLabel').innerHTML = wd.rest
+    ? `Today: <b>Rest Day</b> — recovery focus, eat at target`
+    : `Today: <b>${wd.focus}</b> · ${wd.time}`;
+  showPanel('workout', dow);
+  showPanel('meal', dow);
+}
+updateTodayBar();
+
+/* ---------------- COUNTDOWN ---------------- */
+(function(){
+  let start = localStorage.getItem('lp_start');
+  if(!start){ start = new Date().toISOString(); localStorage.setItem('lp_start', start); }
+  const startDate = new Date(start);
+  const today = new Date();
+  const daysIn = Math.max(0, Math.floor((today - startDate) / 86400000));
+  const totalDays = 84; // 12-week cycle
+  const daysLeft = Math.max(0, totalDays - daysIn);
+  document.getElementById('daysLeft').textContent = daysLeft;
+  document.getElementById('daysLeftLabel').textContent = daysLeft>0 ? 'Days left in 12-week cycle' : 'Cycle complete — reassess';
+})();
+
+/* ---------------- INTERVAL TIMER ---------------- */
+let timerInterval = null, tRound = 0, tPhase = 'work', tRemaining = 30, tRunning=false;
+const timerDisplay = document.getElementById('timerDisplay');
+const timerStatus = document.getElementById('timerStatus');
+function fmt(s){ const m = Math.floor(s/60); const sec = s%60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+function tickTimer(){
+  tRemaining--;
+  if(tRemaining < 0){
+    const work = +document.getElementById('workSec').value || 30;
+    const rest = +document.getElementById('restSec').value || 30;
+    const rounds = +document.getElementById('roundCount').value || 5;
+    if(tPhase === 'work'){ tPhase='rest'; tRemaining = rest; }
+    else { tRound++; if(tRound >= rounds){ stopTimer(); timerStatus.textContent = `Round ${rounds} / ${rounds} · Done!`; timerDisplay.textContent = '00:00'; return; } tPhase='work'; tRemaining = work; }
+  }
+  timerDisplay.textContent = fmt(tRemaining);
+  timerStatus.textContent = `Round ${tRound+1} / ${document.getElementById('roundCount').value} · ${tPhase === 'work' ? 'WORK' : 'REST'}`;
+}
+document.getElementById('timerStart').addEventListener('click', ()=>{
+  if(tRunning) return;
+  if(tRemaining === 30 && tRound === 0 && tPhase==='work'){ tRemaining = +document.getElementById('workSec').value || 30; }
+  tRunning = true;
+  timerInterval = setInterval(tickTimer, 1000);
+});
+function stopTimer(){ tRunning=false; clearInterval(timerInterval); }
+document.getElementById('timerPause').addEventListener('click', stopTimer);
+document.getElementById('timerReset').addEventListener('click', ()=>{
+  stopTimer(); tRound=0; tPhase='work'; tRemaining = +document.getElementById('workSec').value || 30;
+  timerDisplay.textContent = fmt(tRemaining);
+  timerStatus.textContent = 'Round 0 / 0 · Ready';
+});
+
+/* ---------------- WATER TRACKER ---------------- */
+const waterRow = document.getElementById('waterRow');
+const todayKey = new Date().toISOString().slice(0,10);
+let waterState = JSON.parse(localStorage.getItem('lp_water')||'{}');
+if(waterState.date !== todayKey){ waterState = { date: todayKey, filled: 0 }; }
+function renderWater(){
+  waterRow.innerHTML='';
+  for(let i=0;i<10;i++){
+    const d = document.createElement('div');
+    d.className = 'drop' + (i < waterState.filled ? ' filled' : '');
+    d.addEventListener('click', ()=>{ waterState.filled = (i < waterState.filled) ? i : i+1; save(); });
+    waterRow.appendChild(d);
+  }
+  document.getElementById('waterCount').textContent = `${waterState.filled} / 10 glasses`;
+}
+function save(){ localStorage.setItem('lp_water', JSON.stringify(waterState)); renderWater(); }
+document.getElementById('waterReset').addEventListener('click', ()=>{ waterState.filled = 0; save(); });
+renderWater();
+
+/* ---------------- PROGRESS TRACKER ---------------- */
+let entries = JSON.parse(localStorage.getItem('lp_entries') || '[]');
+const tBody = document.getElementById('trackerBody');
+document.getElementById('tDate').valueAsDate = new Date();
+
+function renderTable(){
+  tBody.innerHTML='';
+  entries.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach((e,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${e.date}</td><td>${e.weight} kg</td><td>${e.fat}%</td><td><button class="iconbtn" data-idx="${idx}" title="Delete" style="width:1.8rem;height:1.8rem;">×</button></td>`;
+    tBody.appendChild(tr);
+  });
+}
+let progChart;
+function renderChart(){
+  const sorted = entries.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const styles = getComputedStyle(document.documentElement);
+  const turmeric = styles.getPropertyValue('--turmeric').trim();
+  const sage = styles.getPropertyValue('--sage').trim();
+  const muted = styles.getPropertyValue('--muted').trim();
+  if(progChart) progChart.destroy();
+  const ctx = document.getElementById('progchart').getContext('2d');
+  progChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels: sorted.map(e=>e.date),
+      datasets:[
+        { label:'Weight (kg)', data: sorted.map(e=>e.weight), borderColor: turmeric, backgroundColor:'transparent', tension:0.3, yAxisID:'y' },
+        { label:'Body fat (%)', data: sorted.map(e=>e.fat), borderColor: sage, backgroundColor:'transparent', tension:0.3, yAxisID:'y1' }
+      ]},
+    options:{ responsive:true, interaction:{mode:'index',intersect:false},
+      scales:{ y:{ position:'left', ticks:{color:muted}, grid:{color:'rgba(150,150,150,0.1)'} }, y1:{ position:'right', ticks:{color:muted}, grid:{display:false} }, x:{ ticks:{color:muted}, grid:{display:false} } },
+      plugins:{ legend:{ labels:{ color: muted } } }
+    }
+  });
+}
+document.getElementById('tAdd').addEventListener('click', ()=>{
+  const date = document.getElementById('tDate').value;
+  const weight = document.getElementById('tWeight').value;
+  const fat = document.getElementById('tFat').value;
+  if(!date || !weight) return;
+  entries.push({date, weight:+weight, fat: fat? +fat : null});
+  localStorage.setItem('lp_entries', JSON.stringify(entries));
+  renderTable(); renderChart();
+  document.getElementById('tWeight').value=''; document.getElementById('tFat').value='';
+});
+tBody.addEventListener('click', (e)=>{
+  if(e.target.dataset.idx !== undefined){
+    entries.splice(+e.target.dataset.idx,1);
+    localStorage.setItem('lp_entries', JSON.stringify(entries));
+    renderTable(); renderChart();
+  }
+});
+renderTable(); renderChart();
+</script>
+</body>
+</html>
