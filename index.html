@@ -315,8 +315,190 @@ canvas#progchart{ width:100%; max-height:22rem; margin-top:1rem; }
 footer{ padding: clamp(2rem,5vw,3.5rem) 0; text-align:center; color:var(--muted); font-size:0.85rem; }
 footer .btn{ margin-top:1rem; }
 
+/* ================================================================
+   MEAL TRACKER STYLES
+================================================================ */
+
+/* Next meal banner */
+.next-meal-banner{
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  background:linear-gradient(135deg, rgba(224,168,58,0.12), rgba(224,168,58,0.04));
+  border:1px solid rgba(224,168,58,0.35); border-radius:1rem;
+  padding:clamp(1rem,1.8vw,1.4rem); margin-bottom:1.5rem;
+  position:relative; overflow:hidden;
+}
+.next-meal-banner::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent, rgba(224,168,58,0.06), transparent);
+  animation:shimmer 3s infinite;
+}
+@keyframes shimmer{ 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
+.next-meal-banner .banner-icon{ font-size:2rem; flex:none; }
+.next-meal-banner .banner-text{ flex:1; }
+.next-meal-banner .banner-label{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--turmeric); margin-bottom:0.2rem; }
+.next-meal-banner .banner-meal{ font-weight:700; font-size:clamp(1rem,1.5vw,1.2rem); }
+.next-meal-banner .banner-meta{ font-family:'JetBrains Mono',monospace; font-size:0.82rem; color:var(--muted); margin-top:0.2rem; }
+.next-meal-banner.eat-now{ border-color:rgba(201,96,63,0.5); background:linear-gradient(135deg,rgba(201,96,63,0.12),rgba(201,96,63,0.04)); }
+.next-meal-banner.eat-now .banner-label{ color:var(--paprika); }
+.next-meal-banner.all-done{ border-color:rgba(127,176,140,0.5); background:linear-gradient(135deg,rgba(127,176,140,0.12),rgba(127,176,140,0.04)); }
+.next-meal-banner.all-done .banner-label{ color:var(--sage); }
+
+/* Macro progress bars */
+.macro-bars{ display:flex; flex-direction:column; gap:0.9rem; margin-bottom:1.5rem; }
+.macro-bar-row{ display:flex; align-items:center; gap:0.8rem; }
+.macro-bar-label{ font-family:'JetBrains Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); min-width:5.5rem; }
+.macro-bar-track{ flex:1; height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
+.macro-bar-fill{ height:100%; border-radius:4px; transition:width 0.7s cubic-bezier(.4,0,.2,1); }
+.macro-bar-fill.kcal{ background:linear-gradient(90deg, var(--turmeric-dim), var(--turmeric)); }
+.macro-bar-fill.protein{ background:linear-gradient(90deg, #3a8c5a, var(--sage)); }
+.macro-bar-fill.over{ background:linear-gradient(90deg,var(--paprika),#e07050); }
+.macro-bar-val{ font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--text); white-space:nowrap; min-width:6rem; text-align:right; }
+
+/* Today meal cards */
+.today-meal-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:1rem;
+  padding:clamp(1rem,1.8vw,1.4rem); margin-bottom:0.8rem;
+  transition: border-color .25s, background .25s, transform .15s;
+  position:relative; overflow:hidden;
+}
+.today-meal-card:hover{ border-color:var(--turmeric-dim); transform:translateY(-1px); }
+.today-meal-card.eaten{
+  background: var(--panel-2);
+  border-color:rgba(127,176,140,0.45);
+}
+.today-meal-card.eaten::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--sage); border-radius:3px 0 0 3px;
+}
+.today-meal-card.time-sensitive{ border-left:3px solid var(--turmeric); }
+.today-meal-card.time-sensitive.eat-now-card{
+  border-color:var(--paprika);
+  animation:cardPulse 2s infinite;
+}
+@keyframes cardPulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(201,96,63,0); }
+  50%{ box-shadow:0 0 0 6px rgba(201,96,63,0.12); }
+}
+
+/* Meal card header row */
+.meal-card-header{ display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.4rem; }
+.meal-time-badge{
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem;
+  color:var(--turmeric); background:rgba(224,168,58,0.1);
+  border:1px solid rgba(224,168,58,0.2); border-radius:999px; padding:0.15rem 0.6rem;
+  white-space:nowrap;
+}
+.meal-status-badge{
+  font-family:'JetBrains Mono',monospace; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.06em;
+  padding:0.15rem 0.55rem; border-radius:999px; white-space:nowrap; flex:none;
+}
+.badge-eaten{ background:rgba(127,176,140,0.15); color:var(--sage); border:1px solid rgba(127,176,140,0.3); }
+.badge-now{ background:rgba(201,96,63,0.15); color:var(--paprika); border:1px solid rgba(201,96,63,0.3); animation:badgePulse 1.5s infinite; }
+@keyframes badgePulse{ 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+.badge-soon{ background:rgba(224,168,58,0.15); color:var(--turmeric); border:1px solid rgba(224,168,58,0.3); }
+.badge-upcoming{ background:var(--panel-2); color:var(--muted); border:1px solid var(--line); }
+.badge-missed{ background:rgba(201,96,63,0.1); color:var(--paprika); border:1px solid rgba(201,96,63,0.2); }
+.badge-sensitive{ background:rgba(224,168,58,0.12); color:var(--turmeric); border:1px solid rgba(224,168,58,0.25); }
+
+.today-meal-name{ font-weight:700; font-size:clamp(1rem,1.4vw,1.15rem); margin-bottom:0.15rem; }
+.today-meal-name.strikethrough{ opacity:0.5; text-decoration:line-through; }
+.today-meal-macros{ font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--sage); margin-bottom:0.6rem; }
+.eaten-at-tag{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--sage); opacity:0.8; margin-top:0.3rem; }
+
+/* Mark eaten button */
+.meal-card-footer{ display:flex; align-items:center; justify-content:space-between; gap:0.8rem; flex-wrap:wrap; margin-top:0.5rem; }
+.mark-eaten-btn{
+  font-family:'JetBrains Mono',monospace; text-transform:uppercase; font-size:0.73rem; letter-spacing:0.05em;
+  border:1.5px solid var(--line); background:transparent; color:var(--muted);
+  padding:0.45rem 1rem; border-radius:999px; cursor:pointer; transition:.2s; display:flex; align-items:center; gap:0.4rem;
+}
+.mark-eaten-btn:hover{ border-color:var(--sage); color:var(--sage); background:rgba(127,176,140,0.08); }
+.mark-eaten-btn.is-eaten{ border-color:var(--sage); color:var(--sage); background:rgba(127,176,140,0.1); }
+.mark-eaten-btn.is-eaten:hover{ border-color:var(--paprika); color:var(--paprika); background:rgba(201,96,63,0.08); }
+
+/* Countdown label */
+.countdown-label{
+  font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--turmeric);
+  display:flex; align-items:center; gap:0.3rem;
+}
+
+/* Day summary inline card */
+.day-summary-card{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:1rem;
+  padding:clamp(1.2rem,2vw,1.8rem); margin-top:1.5rem;
+  display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center;
+}
+.summary-ring-wrap{ position:relative; width:80px; height:80px; flex:none; }
+.summary-ring-wrap svg{ transform:rotate(-90deg); }
+.summary-ring-wrap .ring-bg{ fill:none; stroke:var(--line); stroke-width:8; }
+.summary-ring-wrap .ring-fill{ fill:none; stroke:var(--turmeric); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1), stroke .3s; }
+.summary-ring-wrap .ring-label{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:1.05rem; font-weight:700; color:var(--turmeric); }
+.summary-stats{ flex:1; display:flex; flex-direction:column; gap:0.4rem; }
+.summary-stat-row{ display:flex; gap:0.8rem; align-items:baseline; }
+.summary-stat-val{ font-family:'JetBrains Mono',monospace; font-size:1.1rem; color:var(--text); font-weight:700; }
+.summary-stat-label{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; color:var(--muted); }
+.summary-missed{ flex:1; min-width:13rem; }
+.summary-missed h5{ font-family:'JetBrains Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:0.5rem; }
+.summary-missed ul{ list-style:none; color:var(--muted); font-size:0.88rem; }
+.summary-missed li{ padding:0.2rem 0 0.2rem 1rem; position:relative; line-height:1.4; }
+.summary-missed li::before{ content:'✗'; position:absolute; left:0; color:var(--paprika); font-size:0.7rem; }
+
+/* Streak pill in today bar */
+.streak-pill{
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem; letter-spacing:0.04em;
+  background:rgba(224,168,58,0.12); border:1px solid rgba(224,168,58,0.25);
+  color:var(--turmeric); padding:0.2rem 0.65rem; border-radius:999px;
+  display:inline-flex; align-items:center; gap:0.3rem;
+}
+
+/* Full-screen Day Summary Modal */
+.day-modal-backdrop{
+  position:fixed; inset:0; z-index:200;
+  background:rgba(12,36,39,0.85); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  padding:1.5rem; opacity:0; pointer-events:none; transition:opacity .3s;
+}
+.day-modal-backdrop.open{ opacity:1; pointer-events:auto; }
+.day-modal{
+  background:var(--panel); border:1px solid var(--line); border-radius:1.4rem;
+  padding:clamp(1.5rem,4vw,3rem); max-width:36rem; width:100%;
+  box-shadow:0 40px 80px rgba(0,0,0,0.5);
+  transform:translateY(20px); transition:transform .3s;
+  max-height:90vh; overflow-y:auto;
+}
+.day-modal-backdrop.open .day-modal{ transform:translateY(0); }
+.day-modal h3{ font-size:clamp(1.8rem,4vw,2.8rem); margin-bottom:1.2rem; }
+.day-modal-rings{ display:flex; gap:2rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+.ring-group{ display:flex; flex-direction:column; align-items:center; gap:0.5rem; }
+.ring-group .ring-name{ font-family:'JetBrains Mono',monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+.day-modal-message{ background:var(--panel-2); border-radius:0.8rem; padding:1rem 1.2rem; color:var(--muted); font-size:0.9rem; margin-bottom:1.2rem; }
+.day-modal-message b{ color:var(--turmeric); }
+.day-modal-missed h4{ font-family:'JetBrains Mono',monospace; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--paprika); margin-bottom:0.6rem; }
+.day-modal-missed ul{ list-style:none; color:var(--muted); }
+.day-modal-missed li{ padding:0.3rem 0 0.3rem 1.2rem; position:relative; border-bottom:1px dashed var(--line); }
+.day-modal-missed li::before{ content:'✗'; position:absolute; left:0; color:var(--paprika); }
+.day-modal-eaten h4{ font-family:'JetBrains Mono',monospace; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--sage); margin-bottom:0.6rem; margin-top:1rem; }
+.day-modal-eaten ul{ list-style:none; color:var(--muted); }
+.day-modal-eaten li{ padding:0.3rem 0 0.3rem 1.2rem; position:relative; border-bottom:1px dashed var(--line); }
+.day-modal-eaten li::before{ content:'✓'; position:absolute; left:0; color:var(--sage); }
+.modal-close-btn{ margin-top:1.5rem; width:100%; }
+
+/* Floating summary button */
+.floating-summary-btn{
+  position:fixed; bottom:1.8rem; right:1.8rem; z-index:100;
+  background:var(--turmeric); color:#12241f;
+  font-family:'JetBrains Mono',monospace; font-size:0.78rem; text-transform:uppercase; font-weight:700; letter-spacing:0.05em;
+  border:none; border-radius:999px; padding:0.75rem 1.4rem;
+  cursor:pointer; box-shadow:0 8px 30px rgba(224,168,58,0.4);
+  display:flex; align-items:center; gap:0.5rem;
+  transition:transform .2s, box-shadow .2s;
+}
+.floating-summary-btn:hover{ transform:translateY(-3px); box-shadow:0 12px 40px rgba(224,168,58,0.5); }
+.floating-summary-btn.hidden{ display:none; }
+
 @media print{
-  #todaybar, nav.mainnav, .timerwrap, .waterrow, .btn, .tabbar, .sync-panel{ display:none !important; }
+  #todaybar, nav.mainnav, .timerwrap, .waterrow, .btn, .tabbar, .sync-panel,
+  .next-meal-banner, .floating-summary-btn, .day-modal-backdrop { display:none !important; }
   .daypanel{ display:block !important; }
   body{ background:#fff; color:#000; }
 }
@@ -334,6 +516,7 @@ footer .btn{ margin-top:1rem; }
       <span class="label" id="todayLabel">Loading today's session…</span>
     </div>
     <div class="actions">
+      <span class="streak-pill" id="streakPill" style="display:none;">🔥 <span id="streakCount">0</span> day streak</span>
       <button class="iconbtn" id="syncBtn" title="Sync data to cloud (GitHub Gist)" aria-label="Sync data">☁</button>
       <button class="iconbtn" id="themeToggle" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
       <button class="iconbtn" id="printBtn" title="Print / Save PDF" aria-label="Print plan">⎙</button>
@@ -347,6 +530,7 @@ footer .btn{ margin-top:1rem; }
   <a href="#workout">Workout</a>
   <a href="#timer">Timer</a>
   <a href="#meals">Meals</a>
+  <a href="#food-log">Food Log</a>
   <a href="#grocery">Grocery</a>
   <a href="#tracker">Progress</a>
   <a href="#water">Water</a>
@@ -466,6 +650,72 @@ footer .btn{ margin-top:1rem; }
   </div>
 </section>
 
+<section id="food-log">
+  <div class="wrap">
+    <div class="sectionhead">
+      <div>
+        <h2>Today's Food Log</h2>
+        <p>Mark what you've eaten. The plan adapts — next meal suggestions update in real time based on your progress towards your daily goal.</p>
+      </div>
+      <button class="btn ghost" id="openDaySummaryBtn" style="flex:none;">📋 Day Summary</button>
+    </div>
+
+    <!-- Smart next-meal banner -->
+    <div class="next-meal-banner" id="nextMealBanner">
+      <div class="banner-icon" id="nextMealIcon">🍽</div>
+      <div class="banner-text">
+        <div class="banner-label" id="nextMealLabel">Next Meal</div>
+        <div class="banner-meal" id="nextMealName">Loading…</div>
+        <div class="banner-meta" id="nextMealMeta"></div>
+      </div>
+    </div>
+
+    <!-- Macro progress bars -->
+    <div class="macro-bars">
+      <div class="macro-bar-row">
+        <span class="macro-bar-label">Calories</span>
+        <div class="macro-bar-track"><div class="macro-bar-fill kcal" id="kcalBar" style="width:0%"></div></div>
+        <span class="macro-bar-val" id="kcalVal">0 / 2,180 kcal</span>
+      </div>
+      <div class="macro-bar-row">
+        <span class="macro-bar-label">Protein</span>
+        <div class="macro-bar-track"><div class="macro-bar-fill protein" id="proteinBar" style="width:0%"></div></div>
+        <span class="macro-bar-val" id="proteinVal">0 / 140 g</span>
+      </div>
+    </div>
+
+    <!-- Today's meal list -->
+    <div id="todayMealList"></div>
+
+    <!-- Inline day summary -->
+    <div class="day-summary-card" id="daySummaryCard">
+      <div class="summary-ring-wrap">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="ring-bg" cx="40" cy="40" r="34"/>
+          <circle class="ring-fill" id="summaryRingFill" cx="40" cy="40" r="34"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <div class="ring-label" id="summaryRingLabel">0%</div>
+      </div>
+      <div class="summary-stats">
+        <div class="summary-stat-row">
+          <span class="summary-stat-val" id="summaryKcal">0</span>
+          <span class="summary-stat-label">/ 2,180 kcal eaten</span>
+        </div>
+        <div class="summary-stat-row">
+          <span class="summary-stat-val" id="summaryProtein">0g</span>
+          <span class="summary-stat-label">/ 140g protein</span>
+        </div>
+        <div class="summary-stat-row" style="margin-top:0.3rem;">
+          <span class="summary-stat-val" id="summaryMealsCount">0</span>
+          <span class="summary-stat-label">meals eaten today</span>
+        </div>
+      </div>
+      <div class="summary-missed" id="summaryMissedBlock"></div>
+    </div>
+  </div>
+</section>
+
 <section id="grocery">
   <div class="wrap">
     <div class="sectionhead">
@@ -555,6 +805,50 @@ footer .btn{ margin-top:1rem; }
     <button class="btn" id="printBtn2">Print / Save as PDF</button>
   </div>
 </footer>
+
+<!-- Day Summary Modal -->
+<div class="day-modal-backdrop" id="dayModalBackdrop" role="dialog" aria-modal="true" aria-label="Day Summary">
+  <div class="day-modal">
+    <h3>Day Summary</h3>
+    <div class="day-modal-rings" id="dayModalRings">
+      <div class="ring-group">
+        <div class="summary-ring-wrap" style="width:100px;height:100px;">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="43"/>
+            <circle class="ring-fill" id="modalKcalRing" cx="50" cy="50" r="43"
+              stroke-dasharray="270" stroke-dashoffset="270"/>
+          </svg>
+          <div class="ring-label" id="modalKcalLabel" style="font-size:0.9rem;">0%</div>
+        </div>
+        <span class="ring-name">Calories</span>
+      </div>
+      <div class="ring-group">
+        <div class="summary-ring-wrap" style="width:100px;height:100px;">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="43" stroke="var(--line)"/>
+            <circle class="ring-fill" id="modalProteinRing" cx="50" cy="50" r="43"
+              stroke="var(--sage)" stroke-dasharray="270" stroke-dashoffset="270"/>
+          </svg>
+          <div class="ring-label" id="modalProteinLabel" style="font-size:0.9rem;color:var(--sage);">0%</div>
+        </div>
+        <span class="ring-name">Protein</span>
+      </div>
+    </div>
+    <div class="day-modal-message" id="dayModalMessage">Loading…</div>
+    <div class="day-modal-eaten" id="dayModalEaten"></div>
+    <div class="day-modal-missed" id="dayModalMissed"></div>
+    <div style="margin-top:1rem;padding:0.8rem 1rem;background:var(--panel-2);border-radius:0.7rem;">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--muted);">🔥 Current streak: </span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--turmeric);font-weight:700;" id="dayModalStreak">0 days</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);"> · Best: </span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--turmeric);" id="dayModalBest">0 days</span>
+    </div>
+    <button class="btn modal-close-btn" id="dayModalClose">Close</button>
+  </div>
+</div>
+
+<!-- Floating Day Summary Button -->
+<button class="floating-summary-btn hidden" id="floatingSummaryBtn">📋 Day Summary</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
@@ -1432,8 +1726,461 @@ tBody.addEventListener('click', (e)=>{
 renderTable(); renderChart();
 
 /* ================================================================
+   MEAL TRACKER ENGINE
+================================================================ */
+
+/* --- Config --- */
+const DAILY_KCAL_TARGET = 2180;
+const DAILY_PROTEIN_TARGET = 140;
+
+/* --- Parse macros from string like "~38g protein · ~580 kcal · ~18g fat" --- */
+function parseMacros(macroStr) {
+  const kcal = parseFloat((macroStr.match(/~?([\d.]+)\s*kcal/i) || [])[1] || 0);
+  const protein = parseFloat((macroStr.match(/~?([\d.]+)\s*g\s*protein/i) || [])[1] || 0);
+  return { kcal, protein };
+}
+
+/* --- Convert "8:00 AM" -> minutes since midnight --- */
+function timeToMinutes(timeStr) {
+  const clean = timeStr.replace(/\s*·.*/, '').trim(); // strip any extra text
+  const m = clean.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return -1;
+  let h = parseInt(m[1]), min = parseInt(m[2]), ampm = m[3].toUpperCase();
+  if (ampm === 'PM' && h !== 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+/* --- Is a meal time-sensitive? --- */
+function isTimeSensitive(meal) {
+  const lbl = (meal.label || '').toLowerCase();
+  return lbl.includes('pre-workout') || lbl.includes('post-workout') ||
+         lbl.includes('before bed') || lbl.includes('pre workout') || lbl.includes('post workout');
+}
+
+/* --- Load today's meal eaten state --- */
+function loadMealState() {
+  const allState = JSON.parse(localStorage.getItem('lp_meals') || '{}');
+  const key = new Date().toISOString().slice(0, 10);
+  return allState[key] || {};
+}
+function saveMealState(state) {
+  const allState = JSON.parse(localStorage.getItem('lp_meals') || '{}');
+  const key = new Date().toISOString().slice(0, 10);
+  allState[key] = state;
+  localStorage.setItem('lp_meals', JSON.stringify(allState));
+}
+
+/* --- Get meal status relative to now --- */
+function getMealStatus(meal, mealIdx, eatenState) {
+  const eatenInfo = eatenState[mealIdx];
+  if (eatenInfo && eatenInfo.eaten) return 'eaten';
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const mealMin = timeToMinutes(meal.time);
+  if (mealMin < 0) return 'upcoming';
+  const diff = mealMin - nowMin; // positive = in the future
+  if (diff < -90) return 'missed';
+  if (diff < 0) return 'eat-now';
+  if (diff <= 30) return 'soon';
+  return 'upcoming';
+}
+
+/* --- Compute today's consumed macros --- */
+function getConsumedMacros(meals, eatenState) {
+  let kcal = 0, protein = 0;
+  meals.forEach((m, i) => {
+    if (eatenState[i] && eatenState[i].eaten) {
+      const { kcal: k, protein: p } = parseMacros(m.macros || '');
+      kcal += k; protein += p;
+    }
+  });
+  return { kcal: Math.round(kcal), protein: Math.round(protein) };
+}
+
+/* --- Update macro progress bars --- */
+function updateMacroBars(consumed) {
+  const kcalPct = Math.min(100, (consumed.kcal / DAILY_KCAL_TARGET) * 100);
+  const proteinPct = Math.min(100, (consumed.protein / DAILY_PROTEIN_TARGET) * 100);
+  const kcalOver = consumed.kcal > DAILY_KCAL_TARGET;
+  const proteinOver = consumed.protein > DAILY_PROTEIN_TARGET;
+
+  const kcalBar = document.getElementById('kcalBar');
+  const proteinBar = document.getElementById('proteinBar');
+  kcalBar.style.width = kcalPct + '%';
+  kcalBar.className = 'macro-bar-fill kcal' + (kcalOver ? ' over' : '');
+  proteinBar.style.width = proteinPct + '%';
+  proteinBar.className = 'macro-bar-fill protein' + (proteinOver ? ' over' : '');
+
+  document.getElementById('kcalVal').textContent =
+    `${consumed.kcal.toLocaleString()} / ${DAILY_KCAL_TARGET.toLocaleString()} kcal`;
+  document.getElementById('proteinVal').textContent =
+    `${consumed.protein} / ${DAILY_PROTEIN_TARGET} g`;
+}
+
+/* --- Update inline summary card --- */
+function updateInlineSummary(meals, eatenState) {
+  const consumed = getConsumedMacros(meals, eatenState);
+  const pct = Math.min(100, Math.round((consumed.kcal / DAILY_KCAL_TARGET) * 100));
+  const circumference = 213.6;
+  const offset = circumference - (circumference * pct / 100);
+
+  const ringFill = document.getElementById('summaryRingFill');
+  ringFill.style.strokeDashoffset = offset;
+  if (pct >= 100) ringFill.style.stroke = 'var(--sage)';
+  else if (pct >= 80) ringFill.style.stroke = 'var(--turmeric)';
+  else ringFill.style.stroke = 'var(--turmeric-dim)';
+
+  document.getElementById('summaryRingLabel').textContent = pct + '%';
+  document.getElementById('summaryKcal').textContent = consumed.kcal.toLocaleString();
+  document.getElementById('summaryProtein').textContent = consumed.protein + 'g';
+
+  const eatenCount = Object.values(eatenState).filter(v => v && v.eaten).length;
+  document.getElementById('summaryMealsCount').textContent = eatenCount;
+
+  // Missed meals block
+  const missedBlock = document.getElementById('summaryMissedBlock');
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const missedMeals = meals.filter((m, i) => {
+    const s = getMealStatus(m, i, eatenState);
+    return s === 'missed';
+  });
+  if (missedMeals.length > 0) {
+    missedBlock.innerHTML = `<h5>Skipped / missed</h5><ul>${missedMeals.map(m =>
+      `<li>${m.label} — ${m.name}</li>`).join('')}</ul>`;
+  } else {
+    missedBlock.innerHTML = `<h5 style="color:var(--sage)">Looking good!</h5><p style="font-size:0.85rem;color:var(--muted);">All past meals accounted for.</p>`;
+  }
+}
+
+/* --- Update smart next-meal banner --- */
+function updateNextMealBanner(meals, eatenState) {
+  const banner = document.getElementById('nextMealBanner');
+  const icon = document.getElementById('nextMealIcon');
+  const label = document.getElementById('nextMealLabel');
+  const name = document.getElementById('nextMealName');
+  const meta = document.getElementById('nextMealMeta');
+
+  const allEaten = meals.every((_, i) => eatenState[i] && eatenState[i].eaten);
+  if (allEaten) {
+    banner.className = 'next-meal-banner all-done';
+    icon.textContent = '🎉';
+    label.textContent = 'All meals done!';
+    name.textContent = 'You completed your meal plan for today.';
+    meta.textContent = 'Check your Day Summary to see how you did.';
+    return;
+  }
+
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  // Find next un-eaten meal
+  let nextIdx = -1;
+  for (let i = 0; i < meals.length; i++) {
+    if (!eatenState[i] || !eatenState[i].eaten) {
+      nextIdx = i; break;
+    }
+  }
+  if (nextIdx < 0) return;
+
+  const m = meals[nextIdx];
+  const mealMin = timeToMinutes(m.time);
+  const diff = mealMin - nowMin;
+  const { kcal, protein } = parseMacros(m.macros || '');
+  const sensitive = isTimeSensitive(m);
+
+  if (diff < -90) {
+    // Overdue / missed — show next upcoming un-eaten instead
+    banner.className = 'next-meal-banner';
+    icon.textContent = '⚠️';
+    label.textContent = 'Missed window — eat when you can';
+    name.textContent = m.label + ': ' + m.name;
+    meta.textContent = `Was scheduled at ${m.time} · ${kcal} kcal · ${protein}g protein`;
+  } else if (diff < 0) {
+    banner.className = 'next-meal-banner eat-now';
+    icon.textContent = sensitive ? '⏰' : '🔥';
+    label.textContent = '🔥 Eat Right Now!';
+    name.textContent = m.label + ': ' + m.name;
+    meta.textContent = `${Math.abs(diff)} min overdue · ${kcal} kcal · ${protein}g protein`;
+  } else if (diff <= 30) {
+    banner.className = 'next-meal-banner eat-now';
+    icon.textContent = sensitive ? '⏰' : '🍽';
+    label.textContent = sensitive ? '⏰ Time-sensitive — Eat Soon' : '⏳ Coming up in ' + diff + ' min';
+    name.textContent = m.label + ': ' + m.name;
+    meta.textContent = `At ${m.time} · ${kcal} kcal · ${protein}g protein`;
+  } else if (diff <= 90) {
+    banner.className = 'next-meal-banner';
+    icon.textContent = '🍽';
+    label.textContent = 'Next Meal — in ' + diff + ' min';
+    name.textContent = m.label + ': ' + m.name;
+    meta.textContent = `At ${m.time} · ${kcal} kcal · ${protein}g protein`;
+  } else {
+    const hrs = Math.floor(diff / 60), mins = diff % 60;
+    banner.className = 'next-meal-banner';
+    icon.textContent = '📅';
+    label.textContent = 'Plan Ahead';
+    name.textContent = m.label + ': ' + m.name;
+    meta.textContent = `At ${m.time} (in ${hrs}h ${mins}m) · ${kcal} kcal · ${protein}g protein`;
+  }
+}
+
+/* --- Render today's meal list --- */
+function renderTodayLog() {
+  const dow = new Date().getDay();
+  const dayData = MEAL_DAYS[dow];
+  const meals = dayData ? dayData.meals : [];
+  const eatenState = loadMealState();
+  const container = document.getElementById('todayMealList');
+  container.innerHTML = '';
+
+  meals.forEach((meal, idx) => {
+    const status = getMealStatus(meal, idx, eatenState);
+    const eatenInfo = eatenState[idx] || {};
+    const sensitive = isTimeSensitive(meal);
+    const { kcal, protein } = parseMacros(meal.macros || '');
+
+    // Card classes
+    let cardClass = 'today-meal-card';
+    if (status === 'eaten') cardClass += ' eaten';
+    if (sensitive && status !== 'eaten') cardClass += ' time-sensitive';
+    if (status === 'eat-now' && !eatenInfo.eaten) cardClass += ' eat-now-card';
+
+    // Status badge
+    let badgeHtml = '';
+    if (status === 'eaten') {
+      badgeHtml = '<span class="meal-status-badge badge-eaten">✓ Eaten</span>';
+    } else if (status === 'eat-now') {
+      badgeHtml = '<span class="meal-status-badge badge-now">🔥 Eat Now</span>';
+    } else if (status === 'soon') {
+      badgeHtml = '<span class="meal-status-badge badge-soon">⏳ Coming up</span>';
+    } else if (status === 'missed') {
+      badgeHtml = '<span class="meal-status-badge badge-missed">✗ Missed window</span>';
+    } else {
+      badgeHtml = '<span class="meal-status-badge badge-upcoming">Upcoming</span>';
+    }
+
+    if (sensitive && status !== 'eaten') {
+      badgeHtml += '<span class="meal-status-badge badge-sensitive">⏰ Time-sensitive</span>';
+    }
+
+    // Countdown label for soon/eat-now
+    let countdownHtml = '';
+    if ((status === 'soon' || status === 'eat-now') && !eatenInfo.eaten) {
+      const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const mealMin = timeToMinutes(meal.time);
+      const diff = mealMin - nowMin;
+      if (diff >= 0) {
+        countdownHtml = `<span class="countdown-label">⏱ in ${diff} min</span>`;
+      } else {
+        countdownHtml = `<span class="countdown-label" style="color:var(--paprika);">⏱ ${Math.abs(diff)} min ago</span>`;
+      }
+    }
+
+    // Eaten-at timestamp
+    let eatenAtHtml = '';
+    if (eatenInfo.eaten && eatenInfo.time) {
+      eatenAtHtml = `<div class="eaten-at-tag">✓ Eaten at ${eatenInfo.time}</div>`;
+    }
+
+    // Button
+    const btnClass = eatenInfo.eaten ? 'mark-eaten-btn is-eaten' : 'mark-eaten-btn';
+    const btnText = eatenInfo.eaten ? '↩ Undo' : '✓ Mark as eaten';
+
+    const card = document.createElement('div');
+    card.className = cardClass;
+    card.dataset.mealIdx = idx;
+    card.innerHTML = `
+      <div class="meal-card-header">
+        <span class="meal-time-badge">${meal.time}</span>
+        ${badgeHtml}
+      </div>
+      <div class="today-meal-name${eatenInfo.eaten ? ' strikethrough' : ''}">${meal.label} — ${meal.name}</div>
+      <div class="today-meal-macros">${meal.macros || ''}</div>
+      ${eatenAtHtml}
+      <div class="meal-card-footer">
+        <button class="${btnClass}" data-meal-idx="${idx}">${btnText}</button>
+        ${countdownHtml}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  // Update all dependent UI
+  const consumed = getConsumedMacros(meals, eatenState);
+  updateMacroBars(consumed);
+  updateInlineSummary(meals, eatenState);
+  updateNextMealBanner(meals, eatenState);
+  updateStreakUI();
+
+  // Show/hide floating summary button outside food-log section
+  const floatBtn = document.getElementById('floatingSummaryBtn');
+  floatBtn.classList.remove('hidden');
+}
+
+/* --- Mark / unmark a meal as eaten --- */
+function markMealEaten(idx) {
+  const eatenState = loadMealState();
+  if (eatenState[idx] && eatenState[idx].eaten) {
+    delete eatenState[idx];
+  } else {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    eatenState[idx] = { eaten: true, time: hh + ':' + mm };
+  }
+  saveMealState(eatenState);
+  updateStreakForToday(eatenState);
+  renderTodayLog();
+  // Auto-push to Gist silently if token exists
+  if (getToken && getToken()) {
+    clearTimeout(window._autoSyncTimer);
+    window._autoSyncTimer = setTimeout(() => {
+      pushToGist(true); // silent = true
+    }, 3000);
+  }
+}
+
+/* Delegate click events on meal list */
+document.getElementById('todayMealList').addEventListener('click', (e) => {
+  const btn = e.target.closest('.mark-eaten-btn');
+  if (btn) markMealEaten(+btn.dataset.mealIdx);
+});
+
+/* --- Streak Tracker --- */
+function loadStreak() {
+  return JSON.parse(localStorage.getItem('lp_streak') || '{"current":0,"best":0,"lastDay":""}');
+}
+function saveStreak(s) {
+  localStorage.setItem('lp_streak', JSON.stringify(s));
+}
+
+function updateStreakForToday(eatenState) {
+  const dow = new Date().getDay();
+  const dayData = MEAL_DAYS[dow];
+  if (!dayData) return;
+  const meals = dayData.meals;
+  const consumed = getConsumedMacros(meals, eatenState);
+  const pct = (consumed.kcal / DAILY_KCAL_TARGET) * 100;
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  const streak = loadStreak();
+  // Only credit once per day (when ≥80% kcal eaten)
+  if (pct >= 80 && streak.lastDay !== todayKey) {
+    streak.current += 1;
+    streak.best = Math.max(streak.best, streak.current);
+    streak.lastDay = todayKey;
+    saveStreak(streak);
+  }
+}
+
+function updateStreakUI() {
+  const streak = loadStreak();
+  const pill = document.getElementById('streakPill');
+  const countEl = document.getElementById('streakCount');
+  if (streak.current > 0) {
+    pill.style.display = 'inline-flex';
+    countEl.textContent = streak.current;
+  } else {
+    pill.style.display = 'none';
+  }
+}
+
+/* --- Day Summary Modal --- */
+function getDaySummary() {
+  const dow = new Date().getDay();
+  const dayData = MEAL_DAYS[dow];
+  if (!dayData) return null;
+  const meals = dayData.meals;
+  const eatenState = loadMealState();
+  const consumed = getConsumedMacros(meals, eatenState);
+  const kcalPct = Math.min(100, Math.round((consumed.kcal / DAILY_KCAL_TARGET) * 100));
+  const proteinPct = Math.min(100, Math.round((consumed.protein / DAILY_PROTEIN_TARGET) * 100));
+  const eatenMeals = meals.filter((_, i) => eatenState[i] && eatenState[i].eaten);
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const missedMeals = meals.filter((m, i) => {
+    const st = getMealStatus(m, i, eatenState);
+    return st === 'missed';
+  });
+  return { consumed, kcalPct, proteinPct, eatenMeals, missedMeals, meals };
+}
+
+function openDaySummary() {
+  const summary = getDaySummary();
+  if (!summary) return;
+
+  const { kcalPct, proteinPct, eatenMeals, missedMeals } = summary;
+  const streak = loadStreak();
+
+  // Rings (SVG circumference for r=43 circle: 2*π*43 ≈ 270.2)
+  const circ = 270;
+  document.getElementById('modalKcalRing').style.strokeDashoffset = circ - (circ * kcalPct / 100);
+  document.getElementById('modalKcalLabel').textContent = kcalPct + '%';
+  document.getElementById('modalProteinRing').style.strokeDashoffset = circ - (circ * proteinPct / 100);
+  document.getElementById('modalProteinLabel').textContent = proteinPct + '%';
+
+  // Motivational message
+  let msg = '';
+  if (kcalPct >= 100) msg = `<b>💪 Perfect day!</b> You hit your full calorie target and fuelled your body properly. Great work.`;
+  else if (kcalPct >= 80) msg = `<b>👍 Solid day.</b> You hit ${kcalPct}% of your calorie target. Try to catch the remaining ${DAILY_KCAL_TARGET - summary.consumed.kcal} kcal if there's still time.`;
+  else if (kcalPct >= 50) msg = `<b>⚡ Halfway there.</b> ${kcalPct}% done. Don't skip dinner — your body needs the fuel for recovery overnight.`;
+  else msg = `<b>⚠️ Low intake day.</b> Only ${kcalPct}% of calories eaten. Skipping too many meals regularly will slow fat loss and kill energy. Try to eat the remaining meals.`;
+  document.getElementById('dayModalMessage').innerHTML = msg;
+
+  // Eaten meals list
+  const eatenEl = document.getElementById('dayModalEaten');
+  if (eatenMeals.length > 0) {
+    eatenEl.innerHTML = `<h4>✓ Eaten (${eatenMeals.length})</h4><ul>${eatenMeals.map(m => `<li>${m.label} — ${m.name}</li>`).join('')}</ul>`;
+  } else {
+    eatenEl.innerHTML = '';
+  }
+
+  // Missed meals list
+  const missedEl = document.getElementById('dayModalMissed');
+  if (missedMeals.length > 0) {
+    missedEl.innerHTML = `<h4>✗ Missed (${missedMeals.length})</h4><ul>${missedMeals.map(m => `<li>${m.label} — ${m.name}</li>`).join('')}</ul>`;
+  } else {
+    missedEl.innerHTML = missedMeals.length === 0 && eatenMeals.length > 0
+      ? `<p style="color:var(--sage);font-size:0.9rem;margin-top:0.5rem;">No missed meals — you're on track! 🎉</p>`
+      : '';
+  }
+
+  // Streak
+  document.getElementById('dayModalStreak').textContent = streak.current + ' day' + (streak.current !== 1 ? 's' : '');
+  document.getElementById('dayModalBest').textContent = streak.best + ' day' + (streak.best !== 1 ? 's' : '');
+
+  document.getElementById('dayModalBackdrop').classList.add('open');
+}
+
+function closeDaySummary() {
+  document.getElementById('dayModalBackdrop').classList.remove('open');
+}
+
+document.getElementById('openDaySummaryBtn').addEventListener('click', openDaySummary);
+document.getElementById('floatingSummaryBtn').addEventListener('click', openDaySummary);
+document.getElementById('dayModalClose').addEventListener('click', closeDaySummary);
+document.getElementById('dayModalBackdrop').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeDaySummary();
+});
+
+/* Auto-open day summary after 10 PM if not shown today */
+(function() {
+  const now = new Date();
+  if (now.getHours() >= 22) {
+    const autoKey = 'lp_auto_summary_' + now.toISOString().slice(0, 10);
+    if (!localStorage.getItem(autoKey)) {
+      localStorage.setItem(autoKey, '1');
+      setTimeout(openDaySummary, 2000);
+    }
+  }
+})();
+
+/* --- Refresh banner & status every 60 seconds --- */
+setInterval(() => { renderTodayLog(); }, 60000);
+
+/* --- Initial render --- */
+renderTodayLog();
+
+/* ================================================================
    CLOUD SYNC — GitHub Gist (free, private, no backend needed)
-   Data stored: progress entries + water state
+   Data stored: progress entries + water state + meals + streak
    Token stored: localStorage only on this device, never sent anywhere
    except directly to api.github.com
 ================================================================ */
@@ -1487,14 +2234,16 @@ function buildPayload(){
     entries: JSON.parse(localStorage.getItem('lp_entries') || '[]'),
     water: JSON.parse(localStorage.getItem('lp_water') || '{}'),
     start: localStorage.getItem('lp_start'),
+    meals: JSON.parse(localStorage.getItem('lp_meals') || '{}'),
+    streak: JSON.parse(localStorage.getItem('lp_streak') || '{}'),
     exportedAt: new Date().toISOString()
   };
 }
 
-async function pushToGist(){
+async function pushToGist(silent = false){
   const token = getToken();
-  if(!token){ setSyncStatus('No token saved. Add your GitHub token first.', 'err'); return; }
-  setSyncStatus('Pushing data…');
+  if(!token){ if(!silent) setSyncStatus('No token saved. Add your GitHub token first.', 'err'); return; }
+  if(!silent) setSyncStatus('Pushing data…');
   const payload = JSON.stringify(buildPayload(), null, 2);
   const gistId = getGistId();
   try{
@@ -1517,9 +2266,10 @@ async function pushToGist(){
     if(!res.ok){ const err = await res.json(); throw new Error(err.message || res.status); }
     const data = await res.json();
     localStorage.setItem('lp_gist_id', data.id);
-    setSyncStatus(`✓ Pushed at ${new Date().toLocaleTimeString()}. Gist ID: ${data.id.slice(0,8)}…`, 'ok');
+    if(!silent) setSyncStatus(`✓ Pushed at ${new Date().toLocaleTimeString()}. Gist ID: ${data.id.slice(0,8)}…`, 'ok');
+    else setSyncStatus(`✓ Auto-synced meal data at ${new Date().toLocaleTimeString()}`, 'ok');
   } catch(e){
-    setSyncStatus('Push failed: ' + e.message, 'err');
+    if(!silent) setSyncStatus('Push failed: ' + e.message, 'err');
   }
 }
 
@@ -1541,19 +2291,23 @@ async function pullFromGist(){
     if(payload.entries) { entries = payload.entries; localStorage.setItem('lp_entries', JSON.stringify(entries)); }
     if(payload.water) localStorage.setItem('lp_water', JSON.stringify(payload.water));
     if(payload.start) localStorage.setItem('lp_start', payload.start);
+    // Restore meal tracker data
+    if(payload.meals) localStorage.setItem('lp_meals', JSON.stringify(payload.meals));
+    if(payload.streak) localStorage.setItem('lp_streak', JSON.stringify(payload.streak));
     renderTable(); renderChart(); renderWater();
+    renderTodayLog();
     setSyncStatus(`✓ Pulled at ${new Date().toLocaleTimeString()}. Exported from: ${payload.exportedAt||'unknown'}`, 'ok');
   } catch(e){
     setSyncStatus('Pull failed: ' + e.message, 'err');
   }
 }
 
-document.getElementById('syncPush').addEventListener('click', pushToGist);
+document.getElementById('syncPush').addEventListener('click', () => pushToGist(false));
 document.getElementById('syncPull').addEventListener('click', pullFromGist);
 
 // quick-sync button in top bar
 document.getElementById('syncBtn').addEventListener('click', ()=>{
-  if(getToken()){ pushToGist(); }
+  if(getToken()){ pushToGist(false); }
   else { document.getElementById('sync').scrollIntoView({behavior:'smooth'}); }
 });
 </script>

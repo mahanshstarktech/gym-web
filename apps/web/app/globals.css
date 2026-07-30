@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --ink: #09181a;
+  --panel: #112629;
+  --panel-2: #163032;
+  --line: rgba(232, 229, 217, 0.10);
+  --line-strong: rgba(232, 229, 217, 0.18);
+  --text: #f2efe6;
+  --muted: #7fa8a6;
+  --turmeric: #e0a83a;
+  --turmeric-dim: #a97e2c;
+  --paprika: #c9603f;
+  --sage: #7fb08c;
+  --sky: #5fadc9;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  --radius-sm: 0.5rem;
+  --radius: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --nav-height: 4.5rem; /* bottom nav height */
+  --sidebar-width: 260px;
+  --sidebar-mini: 64px;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+html {
+  font-size: clamp(14px, 0.85vw + 10px, 18px);
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  line-height: 1.55;
+  overflow-x: hidden;
+  /* Safe area padding for notch/home indicator */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+::selection { background: var(--turmeric); color: var(--ink); }
+
+/* ─── Typography ─────────────────────────────────────────────────────────────── */
+.font-display { font-family: var(--font-bebas), sans-serif; letter-spacing: 0.02em; line-height: 0.95; font-weight: 400; }
+.font-mono { font-family: var(--font-mono), monospace; }
+
+/* ─── Tailwind Semantic Color Utilities ─────────────────────────────────────── */
+.bg-ink { background-color: var(--ink); }
+.bg-panel { background-color: var(--panel); }
+.bg-panel-2 { background-color: var(--panel-2); }
+.text-text { color: var(--text); }
+.text-muted { color: var(--muted); }
+.text-turmeric { color: var(--turmeric); }
+.text-sage { color: var(--sage); }
+.text-paprika { color: var(--paprika); }
+.text-sky { color: var(--sky); }
+.border-line { border-color: var(--line); }
+.border-turmeric { border-color: var(--turmeric); }
+.border-sage { border-color: var(--sage); }
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+
+/* ─── Cards ──────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* ─── Glassmorphism (bottom nav, top bar) ────────────────────────────────────── */
+.glass {
+  background: rgba(9, 24, 26, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line);
+}
+
+/* ─── Shimmer Animation ──────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(224, 168, 58, 0.07), transparent);
+  animation: shimmer 2.8s infinite;
+}
+
+/* ─── Pulse Animation ────────────────────────────────────────────────────────── */
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 168, 58, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(224, 168, 58, 0.12); }
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(127, 176, 140, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(127, 176, 140, 0.12); }
+}
+
+/* ─── Progress Bar Fill ──────────────────────────────────────────────────────── */
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.progress-fill.kcal {
+  background: linear-gradient(90deg, var(--turmeric-dim), var(--turmeric));
+}
+.progress-fill.protein {
+  background: linear-gradient(90deg, #3a8c5a, var(--sage));
+}
+.progress-fill.water {
+  background: linear-gradient(90deg, #2a6e8c, var(--sky));
+}
+.progress-fill.over {
+  background: linear-gradient(90deg, var(--paprika), #e07050);
+}
+
+/* ─── Bottom Nav Safe Area ───────────────────────────────────────────────────── */
+.bottom-nav {
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ─── Content Padding (accounts for bottom nav on mobile) ────────────────────── */
+.main-content {
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 1rem);
+}
+@media (min-width: 768px) {
+  .main-content {
+    padding-bottom: 1rem;
+    padding-left: var(--sidebar-width);
+  }
+  .main-content.sidebar-mini {
+    padding-left: var(--sidebar-mini);
+  }
+}
+
+/* ─── Badge Variants ─────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-family: var(--font-mono); font-size: 0.65rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 0.15rem 0.55rem; border-radius: 999px;
+  white-space: nowrap;
+}
+.badge-gold { background: rgba(224,168,58,0.15); color: var(--turmeric); border: 1px solid rgba(224,168,58,0.3); }
+.badge-green { background: rgba(127,176,140,0.15); color: var(--sage); border: 1px solid rgba(127,176,140,0.3); }
+.badge-red { background: rgba(201,96,63,0.12); color: var(--paprika); border: 1px solid rgba(201,96,63,0.25); }
+.badge-blue { background: rgba(95,173,201,0.15); color: var(--sky); border: 1px solid rgba(95,173,201,0.3); }
+.badge-muted { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+
+/* ─── Focus Ring ─────────────────────────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--turmeric); outline-offset: 2px; border-radius: 4px; }
+
+/* ─── Print ──────────────────────────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; color: #000; }
+  .bottom-nav, .sidebar, .floating-btn { display: none !important; }
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

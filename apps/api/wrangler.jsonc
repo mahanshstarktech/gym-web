@@ -1,0 +1,24 @@
+{
+  "name": "lean-protocol-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-07-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lean-protocol-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+    }
+  ],
+  "vars": {
+    "BETTER_AUTH_SECRET": "REPLACE_WITH_RANDOM_SECRET_32_CHARS",
+    "CORS_ORIGIN": "https://lean-protocol.pages.dev"
+  }
+}
