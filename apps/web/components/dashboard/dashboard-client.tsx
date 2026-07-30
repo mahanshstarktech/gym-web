@@ -46,14 +46,14 @@ export function DashboardClient() {
         if (entries.length > 0) {
           const latest = entries[entries.length - 1];
           weight = latest.weight.toString();
-          fat = latest.fat ? latest.fat.toString() : "—";
+          fat = latest.bodyFat ? latest.bodyFat.toString() : "—";
           
           if (entries.length > 1) {
             const prev = entries[entries.length - 2];
             const wDiff = latest.weight - prev.weight;
             weightTrend = wDiff > 0 ? `↑ ${wDiff.toFixed(1)}` : `↓ ${Math.abs(wDiff).toFixed(1)}`;
-            if (latest.fat && prev.fat) {
-              const fDiff = latest.fat - prev.fat;
+            if (latest.bodyFat && prev.bodyFat) {
+              const fDiff = latest.bodyFat - prev.bodyFat;
               fatTrend = fDiff > 0 ? `↑ ${fDiff.toFixed(1)}%` : `↓ ${Math.abs(fDiff).toFixed(1)}%`;
             }
           }
