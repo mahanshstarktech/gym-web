@@ -19,8 +19,10 @@ const tabs = [
 export function BottomNav() {
   const pathname = usePathname();
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname?.startsWith(href);
+  const isActive = (href: string) => {
+    if (href === "/" || href === "/meals") return pathname === href;
+    return pathname?.startsWith(href);
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass bottom-nav">

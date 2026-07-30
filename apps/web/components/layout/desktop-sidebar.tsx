@@ -55,8 +55,10 @@ export function DesktopSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname?.startsWith(href);
+  const isActive = (href: string) => {
+    if (href === "/" || href === "/meals") return pathname === href;
+    return pathname?.startsWith(href);
+  };
 
   return (
     <motion.aside
