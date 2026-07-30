@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Plus, Trash2 } from "lucide-react";
@@ -9,16 +9,29 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 
-// Seeded sample data matching the original app's lp_entries format
+// Default fallback if no data exists
 const SAMPLE_DATA = [
   { date: "2026-07-01", weight: 74.5, bodyFat: 18.2 },
   { date: "2026-07-05", weight: 74.0, bodyFat: 17.9 },
   { date: "2026-07-10", weight: 73.5, bodyFat: 17.5 },
   { date: "2026-07-15", weight: 73.1, bodyFat: 17.2 },
-  { date: "2026-07-20", weight: 72.7, bodyFat: 16.9 },
-  { date: "2026-07-25", weight: 72.3, bodyFat: 16.7 },
-  { date: "2026-07-30", weight: 72.0, bodyFat: 16.6 },
 ];
+
+function loadEntries() {
+  try {
+    const saved = localStorage.getItem("lp_entries");
+    return saved ? JSON.parse(saved) : SAMPLE_DATA;
+  } catch {
+    return SAMPLE_DATA;
+  }
+}
+
+function saveEntries(entries: any[]) {
+  try {
+    localStorage.setItem("lp_entries", JSON.stringify(entries));
+    window.dispatchEvent(new Event("lp_entries_updated"));
+  } catch {}
+}
 
 const EntrySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD format"),
@@ -42,8 +55,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ProgressClient() {
-  const [entries, setEntries] = useState(SAMPLE_DATA);
+  const [entries, setEntries] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+
+  // Load entries on mount
+  useEffect(() => {
+    setEntries(loadEntries());
+  }, []);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<EntryForm>({
     resolver: zodResolver(EntrySchema),
@@ -51,16 +69,23 @@ export function ProgressClient() {
   });
 
   const onSubmit = (data: EntryForm) => {
-    setEntries((prev) =>
-      [...prev, { date: data.date, weight: data.weight, bodyFat: data.bodyFat ?? 0 }]
-        .sort((a, b) => a.date.localeCompare(b.date))
-    );
+    setEntries((prev) => {
+      const next = [...prev, { date: data.date, weight: data.weight, bodyFat: data.bodyFat ?? 0 }]
+        .sort((a, b) => a.date.localeCompare(b.date));
+      saveEntries(next);
+      return next;
+    });
     reset();
     setShowForm(false);
   };
 
-  const deleteEntry = (idx: number) =>
-    setEntries((prev) => prev.filter((_, i) => i !== idx));
+  const deleteEntry = (idx: number) => {
+    setEntries((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      saveEntries(next);
+      return next;
+    });
+  };
 
   const latest = entries[entries.length - 1];
   const prev = entries[entries.length - 2];

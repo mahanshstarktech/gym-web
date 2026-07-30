@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getDb, type Env } from "../db";
 import { progressEntries, mealLogs, workoutLogs, waterLogs, streaks, kvSync } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
@@ -43,7 +43,7 @@ router.post("/kv", async (c) => {
   for (const [key, value] of Object.entries(body.updates)) {
     if (value === null) {
       // Delete key if value is null
-      await db.delete(kvSync).where(eq(kvSync.userId, userId)).where(eq(kvSync.key, key));
+      await db.delete(kvSync).where(and(eq(kvSync.userId, userId), eq(kvSync.key, key)));
     } else {
       const valStr = JSON.stringify(value);
       await db.insert(kvSync)

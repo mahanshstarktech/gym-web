@@ -28,89 +28,99 @@ export function DashboardClient() {
   const [nextMeal, setNextMeal] = useState<{ label: string; time: string; name: string } | null>(null);
 
   useEffect(() => {
-    // 1. Calculate Days
-    let startStr = localStorage.getItem("lp_start");
-    if (!startStr) {
-      startStr = new Date().toISOString();
-      localStorage.setItem("lp_start", startStr);
-    }
-    const daysIn = Math.max(1, Math.floor((new Date().getTime() - new Date(startStr).getTime()) / 86400000) + 1);
-    const daysLeft = Math.max(0, 84 - daysIn + 1);
-
-    // 2. Measurements
-    let weight = "—", weightTrend = "";
-    let fat = "—", fatTrend = "";
-    try {
-      const entries = JSON.parse(localStorage.getItem("lp_entries") || "[]");
-      if (entries.length > 0) {
-        const latest = entries[entries.length - 1];
-        weight = latest.weight.toString();
-        fat = latest.fat ? latest.fat.toString() : "—";
+    const loadData = () => {
+      // 1. Calculate Days
+      let startStr = localStorage.getItem("lp_start");
+      if (!startStr) {
+        startStr = new Date().toISOString();
+        localStorage.setItem("lp_start", startStr);
+      }
+      const daysIn = Math.max(1, Math.floor((new Date().getTime() - new Date(startStr).getTime()) / 86400000) + 1);
+      const daysLeft = Math.max(0, 84 - daysIn + 1);
+  
+      // 2. Measurements
+      let weight = "—", weightTrend = "";
+      let fat = "—", fatTrend = "";
+      try {
+        const entries = JSON.parse(localStorage.getItem("lp_entries") || "[]");
+        if (entries.length > 0) {
+          const latest = entries[entries.length - 1];
+          weight = latest.weight.toString();
+          fat = latest.fat ? latest.fat.toString() : "—";
+          
+          if (entries.length > 1) {
+            const prev = entries[entries.length - 2];
+            const wDiff = latest.weight - prev.weight;
+            weightTrend = wDiff > 0 ? `↑ ${wDiff.toFixed(1)}` : `↓ ${Math.abs(wDiff).toFixed(1)}`;
+            if (latest.fat && prev.fat) {
+              const fDiff = latest.fat - prev.fat;
+              fatTrend = fDiff > 0 ? `↑ ${fDiff.toFixed(1)}%` : `↓ ${Math.abs(fDiff).toFixed(1)}%`;
+            }
+          }
+        }
+      } catch {}
+  
+      // 3. Nutrition (Food Log)
+      let kcal = 0;
+      let protein = 0;
+      const dow = new Date().getDay();
+      const dayPlan = MEAL_DAYS[dow];
+      try {
+        const log = JSON.parse(localStorage.getItem(`lp_food_log_${todayKey()}`) || "{}");
+        dayPlan.meals.forEach((meal, i) => {
+          const state = log[i];
+          if (!state) return;
+          const total = parseMacros(meal.macros);
+          if (state.mealEaten) {
+            kcal += total.kcal;
+            protein += total.protein;
+          } else {
+            const eaten = Object.values(state.itemsEaten || {}).filter(Boolean).length;
+            if (eaten > 0) {
+              kcal += (total.kcal / meal.items.length) * eaten;
+              protein += (total.protein / meal.items.length) * eaten;
+            }
+          }
+        });
         
-        if (entries.length > 1) {
-          const prev = entries[entries.length - 2];
-          const wDiff = latest.weight - prev.weight;
-          weightTrend = wDiff > 0 ? `↑ ${wDiff.toFixed(1)}` : `↓ ${Math.abs(wDiff).toFixed(1)}`;
-          if (latest.fat && prev.fat) {
-            const fDiff = latest.fat - prev.fat;
-            fatTrend = fDiff > 0 ? `↑ ${fDiff.toFixed(1)}%` : `↓ ${Math.abs(fDiff).toFixed(1)}%`;
-          }
+        // Calculate Next Meal
+        const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+        const upcoming = dayPlan.meals.find((m, i) => {
+          const state = log[i];
+          const fullyLogged = state?.mealEaten || (Object.values(state?.itemsEaten || {}).filter(Boolean).length === m.items.length);
+          return !fullyLogged;
+        });
+        if (upcoming) {
+          setNextMeal({ label: upcoming.label, time: upcoming.time, name: upcoming.name });
         }
-      }
-    } catch {}
+      } catch {}
+  
+      // 4. Water
+      let water = 0;
+      try {
+        const wSaved = localStorage.getItem(`lp_water_${todayKey()}`);
+        if (wSaved) water = parseInt(wSaved, 10);
+      } catch {}
+  
+      // 5. Streak
+      let streak = 0;
+      let bestStreak = 0;
+      try {
+        const s = JSON.parse(localStorage.getItem("lp_streak") || '{"current":0,"best":0}');
+        streak = s.current || 0;
+        bestStreak = s.best || 0;
+      } catch {}
+  
+      setStats({ weight, weightTrend, fat, fatTrend, daysLeft, daysIn, kcal, protein, water, streak, bestStreak });
+    };
 
-    // 3. Nutrition (Food Log)
-    let kcal = 0;
-    let protein = 0;
-    const dow = new Date().getDay();
-    const dayPlan = MEAL_DAYS[dow];
-    try {
-      const log = JSON.parse(localStorage.getItem(`lp_food_log_${todayKey()}`) || "{}");
-      dayPlan.meals.forEach((meal, i) => {
-        const state = log[i];
-        if (!state) return;
-        const total = parseMacros(meal.macros);
-        if (state.mealEaten) {
-          kcal += total.kcal;
-          protein += total.protein;
-        } else {
-          const eaten = Object.values(state.itemsEaten || {}).filter(Boolean).length;
-          if (eaten > 0) {
-            kcal += (total.kcal / meal.items.length) * eaten;
-            protein += (total.protein / meal.items.length) * eaten;
-          }
-        }
-      });
-      
-      // Calculate Next Meal
-      const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-      const upcoming = dayPlan.meals.find((m, i) => {
-        const state = log[i];
-        const fullyLogged = state?.mealEaten || (Object.values(state?.itemsEaten || {}).filter(Boolean).length === m.items.length);
-        return !fullyLogged;
-      });
-      if (upcoming) {
-        setNextMeal({ label: upcoming.label, time: upcoming.time, name: upcoming.name });
-      }
-    } catch {}
-
-    // 4. Water
-    let water = 0;
-    try {
-      const wSaved = localStorage.getItem(`lp_water_${todayKey()}`);
-      if (wSaved) water = parseInt(wSaved, 10);
-    } catch {}
-
-    // 5. Streak
-    let streak = 0;
-    let bestStreak = 0;
-    try {
-      const s = JSON.parse(localStorage.getItem("lp_streak") || '{"current":0,"best":0}');
-      streak = s.current || 0;
-      bestStreak = s.best || 0;
-    } catch {}
-
-    setStats({ weight, weightTrend, fat, fatTrend, daysLeft, daysIn, kcal, protein, water, streak, bestStreak });
+    loadData();
+    window.addEventListener("lp_entries_updated", loadData);
+    window.addEventListener("storage", loadData); // Listen for SyncManager updates
+    return () => {
+      window.removeEventListener("lp_entries_updated", loadData);
+      window.removeEventListener("storage", loadData);
+    };
   }, []);
 
   const dow = new Date().getDay();

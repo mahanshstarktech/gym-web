@@ -36,7 +36,7 @@ export function MealsClient() {
       <p className="font-mono text-xs text-[--muted]">{plan.subtitle}</p>
 
       {/* Meal Cards */}
-      <motion.div layout className="space-y-3">
+      <motion.div className="space-y-3">
         {plan.meals.map((meal, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className={cn("card", meal.timeSensitive && "border-l-2 border-l-[--turmeric]", meal.office && !meal.timeSensitive && "border-l-2 border-l-[--sky]")}>
