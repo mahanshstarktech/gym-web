@@ -1,12 +1,10 @@
 import type { MetadataRoute } from "next";
 
-export const dynamic = "force-static";
-
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Lean Protocol",
-    short_name: "Lean Protocol",
-    description: "Your personal monsoon cutting cycle tracker",
+    name: "Aura Fitness",
+    short_name: "Aura",
+    description: "Your personal cutting cycle tracker",
     start_url: "/",
     display: "standalone",
     background_color: "#09181a",

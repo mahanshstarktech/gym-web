@@ -27,21 +27,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lean Protocol — Monsoon Training Cycle",
+  title: "Aura Fitness — Cutting Cycle",
   description: "Your personal cutting cycle tracker. Workout plans, meal logs, progress tracking — all in one installable app.",
-  applicationName: "Lean Protocol",
-  authors: [{ name: "Lean Protocol" }],
+  applicationName: "Aura Fitness",
+  authors: [{ name: "Aura Fitness" }],
   keywords: ["fitness", "workout", "meal plan", "cutting cycle", "PWA"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Lean Protocol",
+    title: "Aura Fitness",
   },
   openGraph: {
     type: "website",
-    title: "Lean Protocol",
-    description: "Personal monsoon cutting cycle tracker",
+    title: "Aura Fitness",
+    description: "Personal cutting cycle tracker",
   },
 };
 

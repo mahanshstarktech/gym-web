@@ -36,7 +36,7 @@ export function LoginClient() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm card p-6">
         <div className="text-center mb-6">
           <div className="w-12 h-12 bg-[--turmeric] rounded-xl flex items-center justify-center mx-auto mb-3">
-            <span className="font-display text-[#09181a] text-xl">LP</span>
+            <span className="font-display text-[#09181a] text-xl">AF</span>
           </div>
           <h1 className="font-display text-2xl text-[--text]">Sign In</h1>
           <p className="text-sm text-[--muted]">Access your synced PWA data</p>

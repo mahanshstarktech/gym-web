@@ -69,7 +69,7 @@ export function DesktopSidebar() {
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-line min-h-[72px]">
         <div className="w-8 h-8 rounded-lg bg-[--turmeric] flex items-center justify-center flex-none">
-          <span className="font-display text-[#09181a] text-sm leading-none">LP</span>
+          <span className="font-display text-[#09181a] text-sm leading-none">AF</span>
         </div>
         <AnimatePresence initial={false}>
           {!collapsed && (
@@ -77,14 +77,9 @@ export function DesktopSidebar() {
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "auto" }}
               exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
               className="overflow-hidden whitespace-nowrap"
             >
-              <p className="font-display text-xl text-[--text] leading-none">LEAN PROTOCOL</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-[--sage] animate-pulse" />
-                <span className="font-mono text-[0.6rem] text-[--muted] uppercase tracking-wider">Monsoon Cycle</span>
-              </div>
+              <h1 className="font-display text-xl text-[--text]">Aura Fitness</h1>
             </motion.div>
           )}
         </AnimatePresence>
