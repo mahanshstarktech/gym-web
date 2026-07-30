@@ -6,7 +6,12 @@ import type { Context, Next } from "hono";
 
 export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) {
   const cookie = c.req.header("Cookie") || "";
-  const token = cookie.match(/lp_session=([^;]+)/)?.[1];
+  let token = cookie.match(/lp_session=([^;]+)/)?.[1];
+  
+  if (!token) {
+    const authHeader = c.req.header("Authorization") || "";
+    token = authHeader.replace("Bearer ", "").trim();
+  }
 
   if (!token) return c.json({ ok: false, error: "Unauthorized" }, 401);
 

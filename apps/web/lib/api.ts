@@ -5,9 +5,10 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
     ...options,
     headers: {
       "Content-Type": "application/json",
+      "Authorization": typeof window !== "undefined" ? `Bearer ${localStorage.getItem("lp_token")}` : "",
       ...(options?.headers || {}),
     },
-    credentials: "include", // For cookies
+    credentials: "include", // For cookies as backup
   });
 
   if (!res.ok) {

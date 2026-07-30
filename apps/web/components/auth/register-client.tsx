@@ -18,13 +18,13 @@ export function RegisterClient() {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetchApi("/api/auth/register", {
+      const res = await fetchApi<any>("/api/auth/register", {
         method: "POST",
         body: JSON.stringify({ name, email, password }),
       });
+      localStorage.setItem("lp_token", res.token);
       toast.success("Account created successfully!");
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (err: any) {
       toast.error(err.message || "Registration failed");
     } finally {

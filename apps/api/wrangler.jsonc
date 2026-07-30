@@ -7,14 +7,8 @@
     {
       "binding": "DB",
       "database_name": "lean-protocol-db",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "database_id": "5bad1801-881f-4a80-bf44-f180461844f4",
       "migrations_dir": "drizzle"
-    }
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "KV",
-      "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
     }
   ],
   "vars": {

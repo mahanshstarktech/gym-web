@@ -43,7 +43,7 @@ router.post("/register", zValidator("json", RegisterSchema), async (c) => {
   const isProd = c.req.url.startsWith("https");
   const cookieStr = `lp_session=${sessionToken}; HttpOnly; Path=/; Expires=${new Date(expiresAt).toUTCString()}${isProd ? "; Secure; SameSite=None" : "; SameSite=Lax"}`;
   c.header("Set-Cookie", cookieStr);
-  return c.json({ ok: true, data: { id: userId, email, name } }, 201);
+  return c.json({ ok: true, data: { id: userId, email, name, token: sessionToken } }, 201);
 });
 
 // POST /api/auth/login
@@ -64,7 +64,7 @@ router.post("/login", zValidator("json", LoginSchema), async (c) => {
   const isProd = c.req.url.startsWith("https");
   const cookieStr = `lp_session=${sessionToken}; HttpOnly; Path=/; Expires=${new Date(expiresAt).toUTCString()}${isProd ? "; Secure; SameSite=None" : "; SameSite=Lax"}`;
   c.header("Set-Cookie", cookieStr);
-  return c.json({ ok: true, data: { id: user.id, email: user.email, name: user.name } });
+  return c.json({ ok: true, data: { id: user.id, email: user.email, name: user.name, token: sessionToken } });
 });
 
 // POST /api/auth/logout
@@ -84,7 +84,13 @@ router.post("/logout", async (c) => {
 // GET /api/auth/me
 router.get("/me", async (c) => {
   const cookie = c.req.header("Cookie") || "";
-  const token = cookie.match(/lp_session=([^;]+)/)?.[1];
+  let token = cookie.match(/lp_session=([^;]+)/)?.[1];
+  
+  if (!token) {
+    const authHeader = c.req.header("Authorization") || "";
+    token = authHeader.replace("Bearer ", "").trim();
+  }
+
   if (!token) return c.json({ ok: false, error: "Unauthorized" }, 401);
 
   const db = getDb(c.env);

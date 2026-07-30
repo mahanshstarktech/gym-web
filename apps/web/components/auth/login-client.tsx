@@ -17,13 +17,13 @@ export function LoginClient() {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetchApi("/api/auth/login", {
+      const res = await fetchApi<any>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
+      localStorage.setItem("lp_token", res.token);
       toast.success("Welcome back!");
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (err: any) {
       toast.error(err.message || "Login failed");
     } finally {
