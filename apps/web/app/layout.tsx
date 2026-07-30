@@ -27,21 +27,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aura Fitness — Cutting Cycle",
-  description: "Your personal cutting cycle tracker. Workout plans, meal logs, progress tracking — all in one installable app.",
-  applicationName: "Aura Fitness",
-  authors: [{ name: "Aura Fitness" }],
+  title: "ForgeRX — Your Cut. Engineered.",
+  description: "Hardcore personal cutting cycle tracker. Workout plans, meal logs, and progress tracking.",
+  applicationName: "ForgeRX",
+  authors: [{ name: "ForgeRX" }],
   keywords: ["fitness", "workout", "meal plan", "cutting cycle", "PWA"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Aura Fitness",
+    title: "ForgeRX",
   },
   openGraph: {
     type: "website",
-    title: "Aura Fitness",
-    description: "Personal cutting cycle tracker",
+    title: "ForgeRX",
+    description: "Your cut. Engineered.",
   },
 };
 

@@ -35,11 +35,11 @@ export function LoginClient() {
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm card p-6">
         <div className="text-center mb-6">
-          <div className="w-12 h-12 bg-[--turmeric] rounded-xl flex items-center justify-center mx-auto mb-3">
-            <span className="font-display text-[#09181a] text-xl">AF</span>
+          <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto mb-3">
+            <img src="/icons/icon-192.png" alt="ForgeRX" className="w-full h-full object-cover" />
           </div>
-          <h1 className="font-display text-2xl text-[--text]">Sign In</h1>
-          <p className="text-sm text-[--muted]">Access your synced PWA data</p>
+          <h1 className="font-display text-2xl text-[--text]">ForgeRX</h1>
+          <p className="text-sm text-[--muted]">Your cut. Engineered.</p>
         </div>
         
         <form onSubmit={handleLogin} className="space-y-4">

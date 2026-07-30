@@ -2,139 +2,123 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchApi } from "@/lib/api";
-import { toast } from "sonner";
 import { useRouter, usePathname } from "next/navigation";
 
-// These are the keys we want to sync across devices
-const SYNC_KEYS = [
-  "lp_start",
-  "lp_theme",
-  "lp_entries",
-  "lp_streak",
-];
-// Dynamic keys that start with these prefixes
-const SYNC_PREFIXES = [
-  "lp_water_",
-  "lp_food_log_",
-  "lp_workout_",
-];
+// Keys to sync across devices
+const SYNC_KEYS = ["lp_start", "lp_theme", "lp_entries", "lp_streak"];
+const SYNC_PREFIXES = ["lp_water_", "lp_food_log_", "lp_workout_"];
 
 function shouldSyncKey(key: string) {
-  if (SYNC_KEYS.includes(key)) return true;
-  if (SYNC_PREFIXES.some(p => key.startsWith(p))) return true;
-  return false;
+  return SYNC_KEYS.includes(key) || SYNC_PREFIXES.some((p) => key.startsWith(p));
 }
 
 export function SyncManager({ children }: { children: React.ReactNode }) {
-  const [synced, setSynced] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [synced, setSynced] = useState(false);
   const pendingUpdates = useRef<Record<string, any>>({});
-  const syncTimeout = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const patchedRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
 
+  // ── 1. Auth check ──────────────────────────────────────────────────────────
   useEffect(() => {
-    // Check auth status
     fetchApi("/api/auth/me")
       .then(() => setIsAuthenticated(true))
       .catch(() => setIsAuthenticated(false));
   }, []);
 
+  // ── 2. Auth guard ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (isAuthenticated === false) {
       if (pathname !== "/login" && pathname !== "/register") {
         router.push("/login");
       }
-      return;
     }
+  }, [isAuthenticated, pathname, router]);
 
-    if (isAuthenticated === true && !synced) {
-      // 1. Initial Pull from Server
-      fetchApi<Record<string, any>>("/api/sync/kv")
-        .then((serverState) => {
-          let merged = false;
-          // Merge server state into local storage if server has data
-          for (const [key, value] of Object.entries(serverState)) {
+  // ── 3. Initial pull from server ────────────────────────────────────────────
+  useEffect(() => {
+    if (isAuthenticated !== true || synced) return;
+
+    fetchApi<Record<string, any>>("/api/sync/kv")
+      .then((serverState) => {
+        const entries = Object.entries(serverState);
+        if (entries.length > 0) {
+          for (const [key, value] of entries) {
+            const serialized = typeof value === "string" ? value : JSON.stringify(value);
             const local = localStorage.getItem(key);
-            // Very basic conflict resolution: server wins on initial load
-            // (A real app would use timestamps, but this is fine for a single user)
-            if (value !== null && JSON.stringify(value) !== local) {
-              localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
-              merged = true;
+            // Server wins: merge only keys that differ
+            if (local !== serialized) {
+              // Use original setItem to avoid re-triggering our patch
+              Object.getPrototypeOf(localStorage).setItem.call(localStorage, key, serialized);
             }
           }
-          if (merged) {
-            toast.success("Synced with cloud");
-            // Force re-render of components reading from localStorage
-            window.dispatchEvent(new Event("storage"));
-          }
-          setSynced(true);
-        })
-        .catch((err) => {
-          console.error("Initial sync failed", err);
-          setSynced(true); // Let app load anyway
-        });
-    }
-  }, [isAuthenticated, synced, pathname, router]);
+          // Notify all components to re-read localStorage
+          window.dispatchEvent(new StorageEvent("storage", { key: "lp_sync_complete" }));
+        }
+        setSynced(true);
+      })
+      .catch(() => {
+        setSynced(true); // Still let app render if pull fails
+      });
+  }, [isAuthenticated, synced]);
 
+  // ── 4. Push interceptor ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!synced || !isAuthenticated) return;
+    if (!synced || isAuthenticated !== true || patchedRef.current) return;
+    patchedRef.current = true;
 
-    // 2. Monkey-patch localStorage to intercept writes and queue them for cloud sync
-    const originalSetItem = localStorage.setItem;
-    const originalRemoveItem = localStorage.removeItem;
+    const proto = Object.getPrototypeOf(localStorage);
+    const originalSetItem = proto.setItem;
+    const originalRemoveItem = proto.removeItem;
 
-    const queueSync = () => {
+    const pushUpdates = () => {
       if (syncTimeout.current) clearTimeout(syncTimeout.current);
       syncTimeout.current = setTimeout(async () => {
         const updates = { ...pendingUpdates.current };
-        pendingUpdates.current = {}; // clear queue
-        
-        if (Object.keys(updates).length > 0) {
-          try {
-            await fetchApi("/api/sync/kv", {
-              method: "POST",
-              body: JSON.stringify({ updates })
-            });
-          } catch (err) {
-            console.error("Failed to push sync", err);
-            // Re-queue on failure
-            Object.assign(pendingUpdates.current, updates);
-          }
+        pendingUpdates.current = {};
+        if (Object.keys(updates).length === 0) return;
+
+        try {
+          await fetchApi("/api/sync/kv", {
+            method: "POST",
+            body: JSON.stringify({ updates }),
+          });
+        } catch {
+          // Re-queue on failure
+          Object.assign(pendingUpdates.current, updates);
         }
-      }, 2000); // Debounce syncs by 2 seconds
+      }, 1500);
     };
 
-    localStorage.setItem = function(key: string, value: string) {
-      originalSetItem.apply(this, [key, value]);
+    proto.setItem = function (key: string, value: string) {
+      originalSetItem.call(this, key, value);
       if (shouldSyncKey(key)) {
-        try {
-          pendingUpdates.current[key] = JSON.parse(value);
-        } catch {
-          pendingUpdates.current[key] = value;
-        }
-        queueSync();
+        try { pendingUpdates.current[key] = JSON.parse(value); }
+        catch { pendingUpdates.current[key] = value; }
+        pushUpdates();
       }
     };
 
-    localStorage.removeItem = function(key: string) {
-      originalRemoveItem.apply(this, [key]);
+    proto.removeItem = function (key: string) {
+      originalRemoveItem.call(this, key);
       if (shouldSyncKey(key)) {
         pendingUpdates.current[key] = null;
-        queueSync();
+        pushUpdates();
       }
     };
 
     return () => {
-      // Cleanup
-      localStorage.setItem = originalSetItem;
-      localStorage.removeItem = originalRemoveItem;
+      proto.setItem = originalSetItem;
+      proto.removeItem = originalRemoveItem;
       if (syncTimeout.current) clearTimeout(syncTimeout.current);
+      patchedRef.current = false;
     };
   }, [synced, isAuthenticated]);
 
-  // Don't render children until auth is checked, to prevent flash of wrong data
+  // Don't render until auth is resolved
   if (isAuthenticated === null) return null;
-  
+
   return <>{children}</>;
 }

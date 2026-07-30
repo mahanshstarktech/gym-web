@@ -68,8 +68,8 @@ export function DesktopSidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-line min-h-[72px]">
-        <div className="w-8 h-8 rounded-lg bg-[--turmeric] flex items-center justify-center flex-none">
-          <span className="font-display text-[#09181a] text-sm leading-none">AF</span>
+        <div className="w-8 h-8 rounded-lg overflow-hidden flex-none">
+          <img src="/icons/icon-192.png" alt="ForgeRX" className="w-full h-full object-cover" />
         </div>
         <AnimatePresence initial={false}>
           {!collapsed && (
@@ -79,7 +79,7 @@ export function DesktopSidebar() {
               exit={{ opacity: 0, width: 0 }}
               className="overflow-hidden whitespace-nowrap"
             >
-              <h1 className="font-display text-xl text-[--text]">Aura Fitness</h1>
+              <h1 className="font-display text-xl text-[--text]">ForgeRX</h1>
             </motion.div>
           )}
         </AnimatePresence>

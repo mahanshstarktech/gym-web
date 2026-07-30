@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Aura Fitness",
-    short_name: "Aura",
-    description: "Your personal cutting cycle tracker",
+    name: "ForgeRX",
+    short_name: "ForgeRX",
+    description: "Your cut. Engineered. Workout plans, meal logs, and progress tracking.",
     start_url: "/",
     display: "standalone",
     background_color: "#09181a",
