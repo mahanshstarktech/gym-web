@@ -3,4 +3,4 @@ pages_build_output_dir = "out"
 compatibility_date = "2024-07-30"
 
 [vars]
-NEXT_PUBLIC_API_URL = "https://lean-protocol-api.YOUR_USERNAME.workers.dev"
+NEXT_PUBLIC_API_URL = "https://lean-protocol-api.mahanshstarktech.workers.dev"

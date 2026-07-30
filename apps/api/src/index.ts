@@ -21,7 +21,11 @@ app.use("*", secureHeaders());
 app.use(
   "*",
   cors({
-    origin: (origin, c) => origin?.includes("localhost") ? origin : (c.env.CORS_ORIGIN || "*"),
+    origin: (origin, c) => {
+      if (!origin) return c.env.CORS_ORIGIN || "*";
+      if (origin.includes("localhost") || origin.endsWith(".pages.dev")) return origin;
+      return c.env.CORS_ORIGIN || "*";
+    },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "Cookie"],
     credentials: true,
