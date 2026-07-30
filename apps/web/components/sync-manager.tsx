@@ -12,6 +12,20 @@ function shouldSyncKey(key: string) {
   return SYNC_KEYS.includes(key) || SYNC_PREFIXES.some((p) => key.startsWith(p));
 }
 
+/** Collect all syncable keys currently in localStorage */
+function collectLocalState(): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || !shouldSyncKey(key)) continue;
+    const raw = localStorage.getItem(key);
+    if (raw === null) continue;
+    try { result[key] = JSON.parse(raw); }
+    catch { result[key] = raw; }
+  }
+  return result;
+}
+
 export function SyncManager({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [synced, setSynced] = useState(false);
@@ -37,34 +51,52 @@ export function SyncManager({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, pathname, router]);
 
-  // ── 3. Initial pull from server ────────────────────────────────────────────
+  // ── 3. Pull from server, then push local state up ──────────────────────────
   useEffect(() => {
     if (isAuthenticated !== true || synced) return;
 
+    const proto = Object.getPrototypeOf(localStorage);
+    const nativeSetItem = proto.setItem.bind(localStorage);
+
     fetchApi<Record<string, any>>("/api/sync/kv")
       .then((serverState) => {
-        const entries = Object.entries(serverState);
-        if (entries.length > 0) {
-          for (const [key, value] of entries) {
-            const serialized = typeof value === "string" ? value : JSON.stringify(value);
-            const local = localStorage.getItem(key);
-            // Server wins: merge only keys that differ
-            if (local !== serialized) {
-              // Use original setItem to avoid re-triggering our patch
-              Object.getPrototypeOf(localStorage).setItem.call(localStorage, key, serialized);
-            }
+        // Merge server into local (server wins for keys that exist on server)
+        for (const [key, value] of Object.entries(serverState)) {
+          const serialized = typeof value === "string" ? value : JSON.stringify(value);
+          const local = localStorage.getItem(key);
+          if (local !== serialized) {
+            nativeSetItem(key, serialized);
           }
-          // Notify all components to re-read localStorage
+        }
+        if (Object.keys(serverState).length > 0) {
           window.dispatchEvent(new StorageEvent("storage", { key: "lp_sync_complete" }));
         }
+
+        // Push ALL local data up to server (covers first-time sync from laptop)
+        const localState = collectLocalState();
+        if (Object.keys(localState).length > 0) {
+          fetchApi("/api/sync/kv", {
+            method: "POST",
+            body: JSON.stringify({ updates: localState }),
+          }).catch(console.error);
+        }
+
         setSynced(true);
       })
       .catch(() => {
-        setSynced(true); // Still let app render if pull fails
+        // Even if pull fails, try to push local data
+        const localState = collectLocalState();
+        if (Object.keys(localState).length > 0) {
+          fetchApi("/api/sync/kv", {
+            method: "POST",
+            body: JSON.stringify({ updates: localState }),
+          }).catch(console.error);
+        }
+        setSynced(true);
       });
   }, [isAuthenticated, synced]);
 
-  // ── 4. Push interceptor ────────────────────────────────────────────────────
+  // ── 4. Push interceptor — catch all future localStorage writes ─────────────
   useEffect(() => {
     if (!synced || isAuthenticated !== true || patchedRef.current) return;
     patchedRef.current = true;
@@ -79,14 +111,12 @@ export function SyncManager({ children }: { children: React.ReactNode }) {
         const updates = { ...pendingUpdates.current };
         pendingUpdates.current = {};
         if (Object.keys(updates).length === 0) return;
-
         try {
           await fetchApi("/api/sync/kv", {
             method: "POST",
             body: JSON.stringify({ updates }),
           });
         } catch {
-          // Re-queue on failure
           Object.assign(pendingUpdates.current, updates);
         }
       }, 1500);
@@ -117,8 +147,6 @@ export function SyncManager({ children }: { children: React.ReactNode }) {
     };
   }, [synced, isAuthenticated]);
 
-  // Don't render until auth is resolved
   if (isAuthenticated === null) return null;
-
   return <>{children}</>;
 }
