@@ -40,7 +40,9 @@ router.post("/register", zValidator("json", RegisterSchema), async (c) => {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   await db.insert(sessions).values({ id: nanoid(), userId, token: sessionToken, expiresAt, createdAt: t });
 
-  c.header("Set-Cookie", `lp_session=${sessionToken}; HttpOnly; Secure; SameSite=None; Path=/; Expires=${new Date(expiresAt).toUTCString()}`);
+  const isProd = c.req.url.startsWith("https");
+  const cookieStr = `lp_session=${sessionToken}; HttpOnly; Path=/; Expires=${new Date(expiresAt).toUTCString()}${isProd ? "; Secure; SameSite=None" : "; SameSite=Lax"}`;
+  c.header("Set-Cookie", cookieStr);
   return c.json({ ok: true, data: { id: userId, email, name } }, 201);
 });
 
@@ -59,7 +61,9 @@ router.post("/login", zValidator("json", LoginSchema), async (c) => {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   await db.insert(sessions).values({ id: nanoid(), userId: user.id, token: sessionToken, expiresAt, createdAt: now() });
 
-  c.header("Set-Cookie", `lp_session=${sessionToken}; HttpOnly; Secure; SameSite=None; Path=/; Expires=${new Date(expiresAt).toUTCString()}`);
+  const isProd = c.req.url.startsWith("https");
+  const cookieStr = `lp_session=${sessionToken}; HttpOnly; Path=/; Expires=${new Date(expiresAt).toUTCString()}${isProd ? "; Secure; SameSite=None" : "; SameSite=Lax"}`;
+  c.header("Set-Cookie", cookieStr);
   return c.json({ ok: true, data: { id: user.id, email: user.email, name: user.name } });
 });
 
@@ -71,7 +75,9 @@ router.post("/logout", async (c) => {
     const db = getDb(c.env);
     await db.delete(sessions).where(eq(sessions.token, token));
   }
-  c.header("Set-Cookie", "lp_session=; HttpOnly; Secure; SameSite=None; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+  const isProd = c.req.url.startsWith("https");
+  const cookieStr = `lp_session=; HttpOnly; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT${isProd ? "; Secure; SameSite=None" : "; SameSite=Lax"}`;
+  c.header("Set-Cookie", cookieStr);
   return c.json({ ok: true });
 });
 
