@@ -2,20 +2,20 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, ChevronDown, ChevronUp, Clock, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Circle, ChevronDown, ChevronUp, Clock, AlertTriangle, Minus, Plus } from "lucide-react";
 import { cn, todayKey } from "@/lib/utils";
 import { MEAL_DAYS, parseMacros, DAILY_KCAL, DAILY_PROTEIN, type Meal } from "@/lib/data";
 
 // ─── State Types ──────────────────────────────────────────────────────────────
 type ItemState = {
-  // meal-level mark: true = ALL items eaten; false = unmarked
   mealEaten: boolean;
   mealTime: string | null;
-  // individual item tracking: { itemIndex: true/false }
   itemsEaten: Record<number, boolean>;
+  // NEW: quantity multiplier per item (e.g. 1.0 = planned, 1.5 = 50% more, 2 = double)
+  itemQty: Record<number, number>;
 };
 
-type LogState = Record<number, ItemState>; // keyed by mealIndex
+type LogState = Record<number, ItemState>;
 
 const LOG_KEY = `lp_food_log_${todayKey()}`;
 
@@ -30,27 +30,41 @@ function saveLog(log: LogState) {
   try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); } catch {}
 }
 
-// Compute macros consumed for a meal considering partial item tracking
+// Compute macros consumed for a meal with quantity multipliers
 function computeMealConsumed(meal: Meal, state: ItemState | undefined): { kcal: number; protein: number } {
   if (!state) return { kcal: 0, protein: 0 };
   const total = parseMacros(meal.macros);
   const n = meal.items.length;
-  if (state.mealEaten) return total;
-  // partial: each item = 1/n of the meal macros
-  const eaten = Object.values(state.itemsEaten).filter(Boolean).length;
-  if (eaten === 0) return { kcal: 0, protein: 0 };
-  return { kcal: (total.kcal / n) * eaten, protein: (total.protein / n) * eaten };
+  if (n === 0) return { kcal: 0, protein: 0 };
+
+  // Per-item macro base
+  const perItemKcal = total.kcal / n;
+  const perItemProtein = total.protein / n;
+
+  if (state.mealEaten && Object.keys(state.itemQty ?? {}).length === 0) {
+    // Whole meal marked without custom qtys
+    return total;
+  }
+
+  // Sum individual items with qty multiplier
+  let kcal = 0, protein = 0;
+  for (let i = 0; i < n; i++) {
+    const eaten = state.itemsEaten[i] ?? state.mealEaten;
+    if (!eaten) continue;
+    const qty = state.itemQty?.[i] ?? 1;
+    kcal += perItemKcal * qty;
+    protein += perItemProtein * qty;
+  }
+  return { kcal, protein };
 }
 
-// Is this meal fully logged?
 function isMealFullyLogged(meal: Meal, state: ItemState | undefined): boolean {
   if (!state) return false;
-  if (state.mealEaten) return true;
+  if (state.mealEaten && !Object.keys(state.itemsEaten).length) return true;
   const eaten = Object.values(state.itemsEaten).filter(Boolean).length;
   return eaten === meal.items.length;
 }
 
-// Time parsing for smart banner
 function timeToMinutes(t: string): number {
   const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!m) return -1;
@@ -61,6 +75,8 @@ function timeToMinutes(t: string): number {
   if (ampm === "AM" && h === 12) h = 0;
   return h * 60 + min;
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function FoodLogClient() {
   const dow = new Date().getDay();
@@ -79,7 +95,7 @@ export function FoodLogClient() {
     saveLog(newLog);
   }, []);
 
-  // Toggle entire meal as eaten/uneaten
+  // Toggle entire meal
   const toggleMeal = useCallback((idx: number) => {
     setLog((prev) => {
       const cur = prev[idx];
@@ -91,10 +107,10 @@ export function FoodLogClient() {
         [idx]: {
           mealEaten: newEaten,
           mealTime: newEaten ? timeStr : null,
-          // if marking as fully eaten, mark all items; if uneating, clear all
           itemsEaten: newEaten
             ? Object.fromEntries(meals[idx].items.map((_, i) => [i, true]))
             : {},
+          itemQty: cur?.itemQty ?? {},
         },
       };
       saveLog(next);
@@ -102,20 +118,24 @@ export function FoodLogClient() {
     });
   }, [meals]);
 
-  // Toggle a single item within a meal
+  // Toggle a single item
   const toggleItem = useCallback((mealIdx: number, itemIdx: number) => {
     setLog((prev) => {
-      const cur = prev[mealIdx] ?? { mealEaten: false, mealTime: null, itemsEaten: {} };
+      const cur = prev[mealIdx] ?? { mealEaten: false, mealTime: null, itemsEaten: {}, itemQty: {} };
       const newItemsEaten = { ...cur.itemsEaten, [itemIdx]: !cur.itemsEaten[itemIdx] };
+      // Default qty to 1 when first ticking
+      const newItemQty = { ...cur.itemQty };
+      if (!cur.itemsEaten[itemIdx] && !newItemQty[itemIdx]) newItemQty[itemIdx] = 1;
       const allEaten = meals[mealIdx].items.every((_, i) => newItemsEaten[i]);
       const t = new Date();
       const timeStr = `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
       const next = {
         ...prev,
         [mealIdx]: {
-          mealEaten: allEaten, // auto-check whole meal when all items done
+          mealEaten: allEaten,
           mealTime: allEaten ? timeStr : cur.mealTime,
           itemsEaten: newItemsEaten,
+          itemQty: newItemQty,
         },
       };
       saveLog(next);
@@ -123,7 +143,27 @@ export function FoodLogClient() {
     });
   }, [meals]);
 
-  // Compute totals
+  // Adjust quantity for an item
+  const adjustQty = useCallback((mealIdx: number, itemIdx: number, delta: number) => {
+    setLog((prev) => {
+      const cur = prev[mealIdx] ?? { mealEaten: false, mealTime: null, itemsEaten: {}, itemQty: {} };
+      const currentQty = cur.itemQty?.[itemIdx] ?? 1;
+      const newQty = Math.max(0.5, Math.round((currentQty + delta) * 2) / 2); // steps of 0.5
+      const next = {
+        ...prev,
+        [mealIdx]: {
+          ...cur,
+          itemQty: { ...cur.itemQty, [itemIdx]: newQty },
+          // Ensure item is marked eaten if qty > 0
+          itemsEaten: { ...cur.itemsEaten, [itemIdx]: true },
+        },
+      };
+      saveLog(next);
+      return next;
+    });
+  }, []);
+
+  // Totals
   const totals = meals.reduce(
     (acc, m, i) => {
       const c = computeMealConsumed(m, log[i]);
@@ -134,20 +174,16 @@ export function FoodLogClient() {
 
   const kcalPct = Math.min(100, (totals.kcal / DAILY_KCAL) * 100);
   const proteinPct = Math.min(100, (totals.protein / DAILY_PROTEIN) * 100);
-
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  // Next uneaten meal
   const nextMealIdx = meals.findIndex((m, i) => !isMealFullyLogged(m, log[i]));
   const nextMeal = nextMealIdx >= 0 ? meals[nextMealIdx] : null;
   const allDone = nextMealIdx === -1;
 
   const mealDiff = nextMeal ? timeToMinutes(nextMeal.time) - nowMin : 0;
   const bannerState = allDone ? "done" : mealDiff < -90 ? "missed" : mealDiff < 0 ? "eat-now" : mealDiff <= 30 ? "soon" : "plan";
-
   const bannerColor = { done: "var(--sage)", "eat-now": "var(--paprika)", soon: "var(--turmeric)", plan: "var(--muted)", missed: "var(--paprika)" }[bannerState];
 
-  // Day summary at end of day (or if all done)
   const missedMeals = meals.filter((m, i) => {
     const mealMin = timeToMinutes(m.time);
     return !isMealFullyLogged(m, log[i]) && mealMin < nowMin - 90;
@@ -198,9 +234,7 @@ export function FoodLogClient() {
             </div>
           </div>
         ))}
-        <p className="font-mono text-[0.6rem] text-[--muted] uppercase tracking-wider">
-          Daily total: {dayPlan.total}
-        </p>
+        <p className="font-mono text-[0.6rem] text-[--muted] uppercase tracking-wider">Daily total: {dayPlan.total}</p>
       </div>
 
       {/* Meal Cards */}
@@ -224,8 +258,7 @@ export function FoodLogClient() {
 
           return (
             <motion.div
-              key={mIdx}
-              layout
+              key={mIdx} layout
               className={cn(
                 "card transition-all duration-300",
                 fullyLogged && "border-[--sage] bg-[rgba(127,176,140,0.04)]",
@@ -233,12 +266,10 @@ export function FoodLogClient() {
                 !fullyLogged && diff < -90 && !partiallyEaten && "opacity-60",
               )}
             >
-              {/* Meal header row */}
+              {/* Header badges */}
               <div className="flex flex-wrap items-start gap-2 mb-3">
                 <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
-                  <span className="badge badge-gold shrink-0">
-                    <Clock size={10} /> {meal.time}
-                  </span>
+                  <span className="badge badge-gold shrink-0"><Clock size={10} /> {meal.time}</span>
                   {statusBadge}
                   {meal.timeSensitive && !fullyLogged && <span className="badge badge-gold shrink-0">⏰ Time-sensitive</span>}
                   {meal.office && <span className="badge badge-blue shrink-0">🏢 Office-friendly</span>}
@@ -249,21 +280,24 @@ export function FoodLogClient() {
               <p className={cn("font-medium text-[--text] mt-0.5", fullyLogged && "line-through opacity-50")}>{meal.name}</p>
               <p className="font-mono text-xs text-[--muted] mt-1">{meal.macros}</p>
 
-              {/* Eaten time */}
               {state?.mealTime && (
                 <p className="font-mono text-[0.65rem] text-[--sage] mt-1.5">✓ Logged at {state.mealTime}</p>
               )}
 
-              {/* Partial consumed */}
-              {partiallyEaten && (
-                <p className="font-mono text-[0.65rem] text-[--turmeric] mt-1.5">
-                  Consumed so far: ~{Math.round(consumed.kcal)} kcal · ~{Math.round(consumed.protein)}g protein
-                </p>
+              {/* Live macro tally when custom quantities used */}
+              {(partiallyEaten || fullyLogged) && consumed.kcal > 0 && (
+                <div className="mt-2 flex gap-3">
+                  <span className="font-mono text-[0.6rem] text-[--turmeric]">~{Math.round(consumed.kcal)} kcal</span>
+                  <span className="font-mono text-[0.6rem] text-[--sage]">~{Math.round(consumed.protein)}g protein</span>
+                  {/* Show if custom qty differs from plan */}
+                  {state?.itemQty && Object.values(state.itemQty).some((q) => q !== 1) && (
+                    <span className="font-mono text-[0.6rem] text-[--paprika]">⚡ Custom qty</span>
+                  )}
+                </div>
               )}
 
               {/* Action buttons */}
               <div className="flex flex-wrap gap-2 mt-3">
-                {/* Mark whole meal */}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => toggleMeal(mIdx)}
@@ -277,13 +311,12 @@ export function FoodLogClient() {
                   {fullyLogged ? "↩ Undo whole meal" : "✓ Mark whole meal eaten"}
                 </motion.button>
 
-                {/* Toggle items expand */}
                 <button
                   onClick={() => setExpandedItems((e) => ({ ...e, [mIdx]: !e[mIdx] }))}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-[--line] text-[--muted] font-mono text-xs hover:border-[--line-strong] hover:text-[--text] transition-colors"
                 >
                   {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  Log individual items
+                  Log & customize items
                 </button>
               </div>
 
@@ -297,33 +330,76 @@ export function FoodLogClient() {
                     transition={{ duration: 0.22 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 pt-3 border-t border-[--line] space-y-1.5">
+                    <div className="mt-3 pt-3 border-t border-[--line] space-y-2">
                       <p className="font-mono text-[0.6rem] uppercase tracking-widest text-[--muted] mb-2">
-                        Tick what you actually ate. Macros auto-adjust.
+                        Tick what you ate · Use +/− to adjust quantity if you ate more or less
                       </p>
                       {meal.items.map((item, iIdx) => {
                         const itemEaten = !!state?.itemsEaten[iIdx];
+                        const qty = state?.itemQty?.[iIdx] ?? 1;
                         const perItem = parseMacros(meal.macros);
-                        const perKcal = Math.round(perItem.kcal / meal.items.length);
-                        const perPro = Math.round(perItem.protein / meal.items.length);
+                        const perKcal = Math.round((perItem.kcal / meal.items.length) * qty);
+                        const perPro = Math.round((perItem.protein / meal.items.length) * qty);
+
                         return (
-                          <motion.button
-                            key={iIdx}
-                            whileTap={{ scale: 0.99 }}
-                            onClick={() => toggleItem(mIdx, iIdx)}
-                            className="w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-[--panel-2] transition-colors text-left group"
-                          >
-                            {itemEaten
-                              ? <CheckCircle2 size={16} className="text-[--sage] flex-none mt-0.5" />
-                              : <Circle size={16} className="text-[--line] group-hover:text-[--muted] flex-none mt-0.5 transition-colors" />
-                            }
-                            <span className={cn("text-sm flex-1", itemEaten ? "text-[--muted] line-through" : "text-[--text]")}>
-                              {item}
-                            </span>
-                            <span className="font-mono text-[0.6rem] text-[--muted] flex-none whitespace-nowrap">
-                              ~{perKcal}kcal / ~{perPro}g P
-                            </span>
-                          </motion.button>
+                          <div key={iIdx} className={cn(
+                            "rounded-xl border transition-all duration-150 p-2.5",
+                            itemEaten
+                              ? "border-[rgba(127,176,140,0.3)] bg-[rgba(127,176,140,0.04)]"
+                              : "border-[--line] hover:border-[--line-strong]"
+                          )}>
+                            {/* Top row: checkbox + name + macros */}
+                            <div className="flex items-start gap-2.5">
+                              <button
+                                onClick={() => toggleItem(mIdx, iIdx)}
+                                className="flex-none mt-0.5 transition-transform active:scale-90"
+                              >
+                                {itemEaten
+                                  ? <CheckCircle2 size={16} className="text-[--sage]" />
+                                  : <Circle size={16} className="text-[--line] hover:text-[--muted] transition-colors" />}
+                              </button>
+                              <span className={cn("text-sm flex-1 leading-snug", itemEaten ? "text-[--muted]" : "text-[--text]")}>
+                                {item}
+                              </span>
+                              <div className="flex-none text-right">
+                                <p className="font-mono text-[0.6rem] text-[--turmeric]">~{perKcal}kcal</p>
+                                <p className="font-mono text-[0.6rem] text-[--sage]">~{perPro}g P</p>
+                              </div>
+                            </div>
+
+                            {/* Quantity adjuster — only show if item is checked */}
+                            {itemEaten && (
+                              <div className="flex items-center gap-3 mt-2 pl-6">
+                                <span className="font-mono text-[0.6rem] text-[--muted]">Qty eaten:</span>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => adjustQty(mIdx, iIdx, -0.5)}
+                                    disabled={qty <= 0.5}
+                                    className="w-7 h-7 rounded-full border border-[--line] flex items-center justify-center text-[--muted] hover:border-[--turmeric] hover:text-[--turmeric] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                  >
+                                    <Minus size={12} />
+                                  </button>
+                                  <span className={cn(
+                                    "font-mono text-sm min-w-[3rem] text-center font-bold",
+                                    qty > 1 ? "text-[--turmeric]" : qty < 1 ? "text-[--paprika]" : "text-[--text]"
+                                  )}>
+                                    {qty === 1 ? "×1" : qty === 0.5 ? "½" : qty % 1 === 0 ? `×${qty}` : `×${qty}`}
+                                  </span>
+                                  <button
+                                    onClick={() => adjustQty(mIdx, iIdx, 0.5)}
+                                    className="w-7 h-7 rounded-full border border-[--line] flex items-center justify-center text-[--muted] hover:border-[--turmeric] hover:text-[--turmeric] transition-colors"
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                </div>
+                                {qty !== 1 && (
+                                  <span className="font-mono text-[0.55rem] text-[--muted]">
+                                    {qty > 1 ? `+${Math.round((qty - 1) * 100)}% more than plan` : `${Math.round((1 - qty) * 100)}% less than plan`}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -337,11 +413,7 @@ export function FoodLogClient() {
 
       {/* End-of-day summary */}
       {(allDone || missedMeals.length > 0) && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h2 className="font-display text-xl text-[--text] mb-3">📊 Day Summary</h2>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-[--panel-2] rounded-xl p-3 text-center">

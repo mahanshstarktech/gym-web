@@ -661,7 +661,7 @@ function ExerciseRow({
       {/* Header */}
       <div className="flex items-start gap-2 mb-3">
         <div className="flex-1 min-w-0">
-          <p className={cn("font-medium text-sm leading-snug truncate",
+          <p className={cn("font-medium text-sm leading-snug",
             allDone ? "text-[--sage] line-through" : "text-[--text]")}>
             {name}
           </p>
@@ -970,7 +970,7 @@ function LiveAnalyticsBar({ stats, status }: { stats: SessionStats; status: stri
 
   return (
     <div className="fixed bottom-[64px] left-0 right-0 z-30 px-3 md:left-[260px]">
-      <motion.div layout className="rounded-2xl border border-[--line] bg-[--panel] shadow-2xl overflow-hidden">
+      <motion.div layout className="rounded-2xl border border-[--line]/60 bg-[--panel]/80 backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden">
         <button onClick={() => setExpanded((e) => !e)} className="w-full px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
