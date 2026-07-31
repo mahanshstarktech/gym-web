@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bell, BellOff, Info } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 const VAPID_PUBLIC_KEY = "BDHdhmTSPC6q9q3ok0eYyygEGb5Bjyts7mfxzQxLIhJ1OfrxzBPOtx5JcHiPhVBtGcH26N4_ADAIbYy6nZHlRRA";
 
@@ -49,9 +50,7 @@ export function SettingsClient() {
       }
 
       // Send to server (we use a fake user ID for now since auth isn't wired to localstorage user id directly here)
-      const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:8787/api/notifications/subscribe" : "/api/notifications/subscribe";
-      
-      await fetch(apiUrl, {
+      await fetch(`${API_URL}/api/notifications/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

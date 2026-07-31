@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { API_URL } from "@/lib/api";
 
 // Types matching our stats engine output
 export function AiCoach({
@@ -31,10 +32,7 @@ export function AiCoach({
     setLoading(true);
     setError(false);
     try {
-      // Use local dev API URL in development, otherwise relative
-      const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:8787/api/ai/insights" : "/api/ai/insights";
-      
-      const res = await fetch(apiUrl, {
+      const res = await fetch(`${API_URL}/api/ai/insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
