@@ -13,6 +13,8 @@
   ],
   "vars": {
     "BETTER_AUTH_SECRET": "REPLACE_WITH_RANDOM_SECRET_32_CHARS",
-    "CORS_ORIGIN": "https://lean-protocol.pages.dev"
+    "CORS_ORIGIN": "https://lean-protocol.pages.dev",
+    "VAPID_PUBLIC_KEY": "BDHdhmTSPC6q9q3ok0eYyygEGb5Bjyts7mfxzQxLIhJ1OfrxzBPOtx5JcHiPhVBtGcH26N4_ADAIbYy6nZHlRRA",
+    "VAPID_PRIVATE_KEY": "i0depgN82LiGlEmho1JFZZ_oLS8CY4VZvGeOtT_tX7M"
   }
 }

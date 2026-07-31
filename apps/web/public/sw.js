@@ -28,3 +28,49 @@ self.addEventListener("fetch", (e) => {
     caches.match(e.request).then((cached) => cached || fetch(e.request))
   );
 });
+
+// ─── Web Push Notifications ───────────────────────────────────────────────────
+
+self.addEventListener("push", (e) => {
+  let data = { title: "ForgeRX", body: "New update from ForgeRX" };
+  
+  if (e.data) {
+    try {
+      data = e.data.json();
+    } catch (err) {
+      data.body = e.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || "/icons/icon-192.png",
+    badge: "/icons/icon-maskable-192.png",
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || "/",
+    },
+  };
+
+  e.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const urlToOpen = e.notification.data?.url || "/";
+  
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      // If a window is already open, focus it
+      for (let client of windowClients) {
+        if (client.url.includes(urlToOpen) && "focus" in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});

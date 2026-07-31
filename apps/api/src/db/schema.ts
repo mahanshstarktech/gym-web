@@ -119,3 +119,13 @@ export const kvSync = sqliteTable("kv_sync", {
     pk: primaryKey({ columns: [table.userId, table.key] })
   }
 });
+
+// ─── Push Subscriptions ───────────────────────────────────────────────────────
+export const pushSubscriptions = sqliteTable("push_subscriptions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: text("created_at").notNull(),
+});

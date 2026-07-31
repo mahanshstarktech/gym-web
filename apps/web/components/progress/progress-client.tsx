@@ -18,6 +18,7 @@ import {
   formatMs,
   type WorkoutHistoryEntry,
 } from "@/lib/stats-engine";
+import { AiCoach } from "./ai-coach";
 
 // ── Existing body entry schema ─────────────────────────────────────────────────
 
@@ -65,9 +66,21 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 
 export function ProgressClient() {
   const [tab, setTab] = useState<"body" | "workout" | "nutrition">("body");
+  
+  // Compute global stats for AI coach once
+  const [history, setHistory] = useState<WorkoutHistoryEntry[]>([]);
+  const [foodLogs, setFoodLogs] = useState<any[]>([]);
+  useEffect(() => {
+    setHistory(loadAllWorkoutSessions());
+    setFoodLogs(loadAllFoodLogs());
+  }, []);
+  const workoutStats = useMemo(() => computeWorkoutAggregate(history), [history]);
+  const nutritionStats = useMemo(() => computeNutritionAggregate(foodLogs), [foodLogs]);
 
   return (
     <div className="space-y-6">
+      <AiCoach workoutStats={workoutStats} nutritionStats={nutritionStats} />
+
       {/* Tab switcher */}
       <div className="flex gap-2">
         {([
