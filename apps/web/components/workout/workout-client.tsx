@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown, ChevronUp, Play, Square, Pause, RotateCcw,
   Zap, Clock, Dumbbell, Activity, ArrowLeft, RefreshCw, Coffee,
-  SkipForward, Plus,
+  SkipForward,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WORKOUT_DAYS, type WorkoutDay, type WorkoutBlock } from "@/lib/data";
 import {
   parseExMeta, getRestMs, formatMs, sessionKey, initSession,
-  loadSession, saveSession, computeStats, getSessionGrade,
+  loadSession, saveSession, computeStats, getSessionGrade, findActiveSessionDay,
   type WorkoutSession, type ExerciseRecord, type SessionStats,
 } from "@/lib/workout-session";
 
@@ -32,12 +32,12 @@ interface FullScreenTimerProps {
 function FullScreenTimerModal({
   exerciseName, timedSec, roundCount, onSetComplete, onDismiss,
 }: FullScreenTimerProps) {
-  const [running, setRunning] = useState(false);
+  const [running, setRunning] = useState(true); // auto-start
   const [round, setRound] = useState(1);
   const [remaining, setRemaining] = useState(timedSec);
   const [phase, setPhase] = useState<"work" | "rest" | "done">("work");
   const [restRemaining, setRestRemaining] = useState(0);
-  const restDuration = 60; // default rest between rounds
+  const restDuration = 60;
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -82,137 +82,206 @@ function FullScreenTimerModal({
     ? restRemaining / restDuration
     : remaining / timedSec;
 
-  const r = 120, cx = 140, cy = 140;
-  const circ = 2 * Math.PI * r;
+  const svgR = 110, svgCx = 130, svgCy = 130;
+  const circ = 2 * Math.PI * svgR;
 
-  const phaseColor = phase === "done" ? "#7fb08c"
-    : phase === "rest" ? "rgb(96,165,250)"
-    : "var(--turmeric)";
+  const isWork = phase === "work";
+  const isDone = phase === "done";
+  const isRest = phase === "rest";
+
+  // Apple accent colors
+  const accentHex = isDone ? "#34c759" : isRest ? "#007aff" : "#ff9f0a";
+  const accentRgba = isDone ? "rgba(52,199,89,0.18)" : isRest ? "rgba(0,122,255,0.18)" : "rgba(255,159,10,0.18)";
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
-      style={{ backdropFilter: "blur(40px) saturate(180%)", WebkitBackdropFilter: "blur(40px) saturate(180%)", background: "rgba(9,24,26,0.85)" }}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6"
+      style={{
+        backdropFilter: "blur(60px) saturate(200%) brightness(0.55)",
+        WebkitBackdropFilter: "blur(60px) saturate(200%) brightness(0.55)",
+        background: "rgba(10,12,14,0.5)",
+      }}
     >
-      {/* Exercise name */}
-      <div className="text-center mb-8 px-6">
-        <p className="font-mono text-[0.65rem] uppercase tracking-widest text-[--muted] mb-1">
-          {phase === "done" ? "Complete!" : phase === "rest" ? "Rest" : "Active Set"}
-        </p>
-        <p className="font-display text-2xl text-[--text] leading-tight max-w-xs mx-auto">
-          {exerciseName}
-        </p>
-        {phase !== "done" && (
-          <p className="font-mono text-xs text-[--muted] mt-1">
-            Round {round} of {roundCount}
-          </p>
-        )}
-      </div>
-
-      {/* Massive ring clock */}
-      <div className="relative mb-8">
-        <svg width={280} height={280} className="-rotate-90">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(232,229,217,0.06)" strokeWidth={8} />
-          <motion.circle
-            cx={cx} cy={cy} r={r} fill="none"
-            stroke={phaseColor}
-            strokeWidth={8} strokeLinecap="round"
-            strokeDasharray={`${circ}`}
-            animate={{ strokeDashoffset: circ * (1 - pct) }}
-            transition={{ duration: 0.5 }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {phase === "done" ? (
-            <span className="font-display text-7xl" style={{ color: phaseColor }}>✓</span>
-          ) : (
-            <span className="font-display text-7xl tabular-nums" style={{ color: phaseColor }}>
-              {phase === "rest" ? restRemaining : remaining}
+      {/* Frosted glass card */}
+      <div
+        className="w-full max-w-sm rounded-[2.5rem] overflow-hidden relative"
+        style={{
+          background: "rgba(255,255,255,0.07)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          boxShadow: "0 32px 64px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(255,255,255,0.06) inset",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}
+      >
+        {/* Phase pill header */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+          <div
+            className="px-3 py-1 rounded-full font-mono text-[0.6rem] uppercase tracking-widest font-semibold"
+            style={{ background: accentRgba, color: accentHex }}
+          >
+            {isDone ? "Complete!" : isRest ? "😴 Rest" : "⚡ Active Set"}
+          </div>
+          {!isDone && (
+            <span className="font-mono text-[0.6rem] text-white/40">
+              Round {round}/{roundCount}
             </span>
           )}
-          <span className="font-mono text-xs text-[--muted] mt-1">
-            {phase === "done" ? "All done!" : "seconds"}
-          </span>
         </div>
-      </div>
 
-      {/* Controls */}
-      <div className="flex items-center gap-4 mb-6">
-        {phase !== "done" && (
-          <>
-            <button
-              onClick={() => { setRemaining(timedSec); setRound(1); setPhase("work"); setRestRemaining(0); setRunning(false); }}
-              className="w-14 h-14 rounded-full border border-[--line] flex items-center justify-center text-[--muted] hover:text-[--text] transition-colors"
-            >
-              <RotateCcw size={20} />
-            </button>
+        {/* Exercise name */}
+        <div className="px-6 pb-1">
+          <p className="font-display text-xl text-white/90 leading-tight">{exerciseName}</p>
+        </div>
 
-            <button
-              onClick={() => setRunning((r) => !r)}
-              className="w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-2xl"
-              style={{ background: phaseColor }}
-            >
-              {running
-                ? <Pause size={28} className="text-[--ink]" />
-                : <Play size={28} fill="currentColor" className="text-[--ink]" />
-              }
-            </button>
+        {/* Main clock ring */}
+        <div className="flex flex-col items-center py-4">
+          <div className="relative">
+            <svg width={260} height={260} className="-rotate-90">
+              {/* Track */}
+              <circle cx={svgCx} cy={svgCy} r={svgR} fill="none"
+                stroke="rgba(255,255,255,0.06)" strokeWidth={10} />
+              {/* Glow layer */}
+              <circle cx={svgCx} cy={svgCy} r={svgR} fill="none"
+                stroke={accentHex} strokeWidth={10} strokeLinecap="round"
+                strokeDasharray={`${circ}`}
+                strokeDashoffset={circ * (1 - pct)}
+                style={{ filter: `drop-shadow(0 0 12px ${accentHex}80)`, opacity: 0.35 }}
+              />
+              {/* Main arc */}
+              <motion.circle cx={svgCx} cy={svgCy} r={svgR} fill="none"
+                stroke={accentHex}
+                strokeWidth={10} strokeLinecap="round"
+                strokeDasharray={`${circ}`}
+                animate={{ strokeDashoffset: circ * (1 - pct) }}
+                transition={{ duration: 0.6, ease: "linear" }}
+              />
+            </svg>
+            {/* Clock face */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {isDone ? (
+                <span style={{ fontSize: 72, color: accentHex }} className="leading-none">✓</span>
+              ) : (
+                <>
+                  <span
+                    className="tabular-nums font-display leading-none"
+                    style={{ fontSize: 72, color: "rgba(255,255,255,0.95)", letterSpacing: "-2px" }}
+                  >
+                    {isRest ? restRemaining : remaining}
+                  </span>
+                  <span className="font-mono text-[0.65rem] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    seconds
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
 
-            <button
-              onClick={() => {
-                if (phase === "rest") {
-                  setRound((rd) => rd + 1);
-                  setRemaining(timedSec);
-                  setPhase("work");
-                  setRestRemaining(0);
-                } else {
-                  if (round >= roundCount) {
-                    setPhase("done");
-                    setRunning(false);
-                    onSetComplete();
-                  } else {
-                    setPhase("rest");
-                    setRestRemaining(restDuration);
-                  }
-                  setRemaining(0);
+        {/* Controls row */}
+        <div className="flex items-center justify-center gap-5 px-6 pb-2">
+          {!isDone && (
+            <>
+              {/* Restart */}
+              <button
+                onClick={() => { setRemaining(timedSec); setRound(1); setPhase("work"); setRestRemaining(0); setRunning(false); }}
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                <RotateCcw size={18} color="rgba(255,255,255,0.7)" />
+              </button>
+
+              {/* Play / Pause — big center button */}
+              <button
+                onClick={() => setRunning((r) => !r)}
+                className="w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-2xl"
+                style={{
+                  background: `linear-gradient(135deg, ${accentHex}ee, ${accentHex}bb)`,
+                  boxShadow: `0 8px 32px ${accentHex}60, 0 0 0 1px ${accentHex}40`,
+                }}
+              >
+                {running
+                  ? <Pause size={30} fill="white" color="white" />
+                  : <Play size={30} fill="white" color="white" className="ml-1" />
                 }
+              </button>
+
+              {/* Skip */}
+              <button
+                onClick={() => {
+                  if (isRest) {
+                    setRound((rd) => rd + 1);
+                    setRemaining(timedSec);
+                    setPhase("work");
+                    setRestRemaining(0);
+                  } else {
+                    if (round >= roundCount) {
+                      setPhase("done");
+                      setRunning(false);
+                      onSetComplete();
+                    } else {
+                      setPhase("rest");
+                      setRestRemaining(restDuration);
+                    }
+                    setRemaining(0);
+                  }
+                }}
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                <SkipForward size={18} color="rgba(255,255,255,0.7)" />
+              </button>
+            </>
+          )}
+
+          {isDone && (
+            <button
+              onClick={onDismiss}
+              className="px-10 py-3.5 rounded-2xl font-display text-lg transition-all active:scale-95"
+              style={{
+                background: `linear-gradient(135deg, ${accentHex}ee, ${accentHex}bb)`,
+                color: "white",
+                boxShadow: `0 8px 24px ${accentHex}50`,
               }}
-              className="w-14 h-14 rounded-full border border-[--line] flex items-center justify-center text-[--muted] hover:text-[--text] transition-colors"
             >
-              <SkipForward size={20} />
+              Done!
             </button>
-          </>
+          )}
+        </div>
+
+        {/* Rest extend buttons */}
+        {isRest && (
+          <div className="flex gap-3 justify-center pb-5 pt-2">
+            <button
+              onClick={() => setRestRemaining((r) => r + 30)}
+              className="px-4 py-2 rounded-xl font-mono text-xs transition-all active:scale-95"
+              style={{ background: "rgba(0,122,255,0.15)", border: "1px solid rgba(0,122,255,0.3)", color: "#007aff" }}
+            >+30s</button>
+            <button
+              onClick={() => setRestRemaining((r) => r + 60)}
+              className="px-4 py-2 rounded-xl font-mono text-xs transition-all active:scale-95"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
+            >+1min</button>
+          </div>
         )}
 
-        {phase === "done" && (
+        {/* Back button */}
+        {!isDone && (
           <button
             onClick={onDismiss}
-            className="px-8 py-4 rounded-2xl font-display text-xl text-[--ink] shadow-2xl"
-            style={{ background: phaseColor }}
+            className="w-full py-4 font-mono text-xs transition-colors"
+            style={{
+              color: "rgba(255,255,255,0.35)",
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+            }}
           >
-            Done!
+            ← Back to workout
           </button>
         )}
       </div>
-
-      {/* Extra time buttons during rest */}
-      {phase === "rest" && (
-        <div className="flex gap-3">
-          <button onClick={() => setRestRemaining((r) => r + 30)} className="px-4 py-2 rounded-full border border-[rgba(96,165,250,0.4)] text-[rgb(96,165,250)] font-mono text-xs">+30s</button>
-          <button onClick={() => setRestRemaining((r) => r + 60)} className="px-4 py-2 rounded-full border border-[rgba(96,165,250,0.2)] text-[--muted] font-mono text-xs">+1min</button>
-        </div>
-      )}
-
-      {/* Dismiss button (always visible) */}
-      <button
-        onClick={onDismiss}
-        className="mt-6 font-mono text-xs text-[--muted] hover:text-[--text] transition-colors"
-      >
-        ← Back to workout
-      </button>
     </motion.div>
   );
 }
@@ -395,7 +464,14 @@ function DayWorkoutView({ dayIndex }: { dayIndex: number }) {
     []
   );
 
+  const [conflictDay, setConflictDay] = useState<number | null>(null);
+
   const startSession = useCallback(() => {
+    const activeDay = findActiveSessionDay(7);
+    if (activeDay !== null && activeDay !== dayIndex) {
+      setConflictDay(activeDay);
+      return;
+    }
     const s = initSession(day, dayIndex);
     saveSession(s);
     setSession(s);
@@ -454,7 +530,50 @@ function DayWorkoutView({ dayIndex }: { dayIndex: number }) {
   }
 
   if (status === "idle") {
-    return <NotStartedView day={day} onStart={startSession} />;
+    return (
+      <>
+        <AnimatePresence>
+          {conflictDay !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
+              style={{ backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", background: "rgba(0,0,0,0.6)" }}
+            >
+              <motion.div
+                initial={{ y: 40, scale: 0.97 }}
+                animate={{ y: 0, scale: 1 }}
+                exit={{ y: 40, scale: 0.97 }}
+                className="w-full max-w-sm rounded-3xl p-6"
+                style={{
+                  background: "rgba(30,30,32,0.92)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  boxShadow: "0 32px 64px rgba(0,0,0,0.7)",
+                  backdropFilter: "blur(20px)",
+                }}
+              >
+                <div className="text-3xl mb-3">⚠️</div>
+                <p className="font-display text-xl text-[--text] mb-2">Workout Already Active</p>
+                <p className="font-mono text-sm text-[--muted] mb-5 leading-relaxed">
+                  <strong className="text-[--turmeric]">{WORKOUT_DAYS[conflictDay].focus}</strong> is still in progress.
+                  You can only have one active workout at a time.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConflictDay(null)}
+                    className="flex-1 py-3 rounded-2xl font-mono text-sm border border-[--line] text-[--muted] hover:border-[--line-strong] hover:text-[--text] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <NotStartedView day={day} onStart={startSession} />
+      </>
+    );
   }
 
   if ((status === "active" || status === "paused") && session) {
@@ -851,6 +970,15 @@ function ExerciseRow({
   const restRemaining = isResting && record.restStartedAt
     ? record.restTargetMs - (now - record.restStartedAt) : 0;
 
+  // Auto-open fullscreen when timed set starts
+  useEffect(() => {
+    if (!parsed.isTimed || !parsed.timedSec) return;
+    const hasActiveSet = record.sets.some((s) => s.status === "active");
+    if (hasActiveSet && !allDone) {
+      setShowFullScreenTimer(true);
+    }
+  }, [record.sets, parsed.isTimed, parsed.timedSec, allDone]);
+
   // Mark a set as done and start rest timer
   const completeSet = useCallback((si: number) => {
     const completedAt = Date.now();
@@ -989,14 +1117,11 @@ function ExerciseRow({
               )}
             </div>
           )}
-          {/* Full-screen timer launch button */}
-          {parsed.isTimed && !allDone && parsed.timedSec && (
-            <button
-              onClick={() => setShowFullScreenTimer(true)}
-              className="flex-none ml-2 px-3 py-1.5 rounded-xl bg-[rgba(224,168,58,0.15)] border border-[--turmeric] text-[--turmeric] font-mono text-[0.6rem] flex items-center gap-1.5 hover:bg-[rgba(224,168,58,0.25)] transition-colors"
-            >
-              <Clock size={11} /> Full Screen
-            </button>
+          {/* Tap-to-start hint for timed exercises */}
+          {parsed.isTimed && !allDone && !hasActive && parsed.timedSec && (
+            <span className="flex-none ml-2 font-mono text-[0.55rem] text-[--turmeric] opacity-70">
+              ⏱ tap to start
+            </span>
           )}
         </div>
 

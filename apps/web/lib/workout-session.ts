@@ -223,6 +223,20 @@ export function saveSession(session: WorkoutSession): void {
   } catch {}
 }
 
+// Returns the dayIndex of the currently active (not ended) session, or null
+export function findActiveSessionDay(totalDays = 7): number | null {
+  try {
+    const date = new Date().toISOString().slice(0, 10);
+    for (let i = 0; i < totalDays; i++) {
+      const raw = localStorage.getItem(`lp_workout_${date}_d${i}`);
+      if (!raw) continue;
+      const s = JSON.parse(raw) as WorkoutSession;
+      if (!s.endedAt) return i;
+    }
+  } catch {}
+  return null;
+}
+
 // ── Compute live session stats ──────────────────────────────────────────────────
 
 export function computeStats(session: WorkoutSession): SessionStats {
