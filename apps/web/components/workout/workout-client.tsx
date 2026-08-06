@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown, ChevronUp, Play, Square, Pause, RotateCcw,
   Zap, Clock, Dumbbell, Activity, ArrowLeft, RefreshCw, Coffee,
+  SkipForward, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WORKOUT_DAYS, type WorkoutDay, type WorkoutBlock } from "@/lib/data";
@@ -15,6 +16,206 @@ import {
 } from "@/lib/workout-session";
 
 type SessionStatus = "idle" | "active" | "paused" | "done";
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Full-Screen Timer Modal (Apple-style, backdrop blur)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface FullScreenTimerProps {
+  exerciseName: string;
+  timedSec: number;
+  roundCount: number;
+  onSetComplete: () => void;  // called when one set/round is fully done
+  onDismiss: () => void;
+}
+
+function FullScreenTimerModal({
+  exerciseName, timedSec, roundCount, onSetComplete, onDismiss,
+}: FullScreenTimerProps) {
+  const [running, setRunning] = useState(false);
+  const [round, setRound] = useState(1);
+  const [remaining, setRemaining] = useState(timedSec);
+  const [phase, setPhase] = useState<"work" | "rest" | "done">("work");
+  const [restRemaining, setRestRemaining] = useState(0);
+  const restDuration = 60; // default rest between rounds
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (!running) return;
+
+    intervalRef.current = setInterval(() => {
+      if (phase === "work") {
+        setRemaining((r) => {
+          if (r <= 1) {
+            clearInterval(intervalRef.current!);
+            if (round >= roundCount) {
+              setPhase("done");
+              setRunning(false);
+              onSetComplete();
+            } else {
+              setPhase("rest");
+              setRestRemaining(restDuration);
+            }
+            return 0;
+          }
+          return r - 1;
+        });
+      } else if (phase === "rest") {
+        setRestRemaining((r) => {
+          if (r <= 1) {
+            clearInterval(intervalRef.current!);
+            setRound((rd) => rd + 1);
+            setRemaining(timedSec);
+            setPhase("work");
+            return 0;
+          }
+          return r - 1;
+        });
+      }
+    }, 1000);
+
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [running, phase, round, roundCount, timedSec, onSetComplete]);
+
+  const pct = phase === "rest"
+    ? restRemaining / restDuration
+    : remaining / timedSec;
+
+  const r = 120, cx = 140, cy = 140;
+  const circ = 2 * Math.PI * r;
+
+  const phaseColor = phase === "done" ? "#7fb08c"
+    : phase === "rest" ? "rgb(96,165,250)"
+    : "var(--turmeric)";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
+      style={{ backdropFilter: "blur(40px) saturate(180%)", WebkitBackdropFilter: "blur(40px) saturate(180%)", background: "rgba(9,24,26,0.85)" }}
+    >
+      {/* Exercise name */}
+      <div className="text-center mb-8 px-6">
+        <p className="font-mono text-[0.65rem] uppercase tracking-widest text-[--muted] mb-1">
+          {phase === "done" ? "Complete!" : phase === "rest" ? "Rest" : "Active Set"}
+        </p>
+        <p className="font-display text-2xl text-[--text] leading-tight max-w-xs mx-auto">
+          {exerciseName}
+        </p>
+        {phase !== "done" && (
+          <p className="font-mono text-xs text-[--muted] mt-1">
+            Round {round} of {roundCount}
+          </p>
+        )}
+      </div>
+
+      {/* Massive ring clock */}
+      <div className="relative mb-8">
+        <svg width={280} height={280} className="-rotate-90">
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(232,229,217,0.06)" strokeWidth={8} />
+          <motion.circle
+            cx={cx} cy={cy} r={r} fill="none"
+            stroke={phaseColor}
+            strokeWidth={8} strokeLinecap="round"
+            strokeDasharray={`${circ}`}
+            animate={{ strokeDashoffset: circ * (1 - pct) }}
+            transition={{ duration: 0.5 }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          {phase === "done" ? (
+            <span className="font-display text-7xl" style={{ color: phaseColor }}>✓</span>
+          ) : (
+            <span className="font-display text-7xl tabular-nums" style={{ color: phaseColor }}>
+              {phase === "rest" ? restRemaining : remaining}
+            </span>
+          )}
+          <span className="font-mono text-xs text-[--muted] mt-1">
+            {phase === "done" ? "All done!" : "seconds"}
+          </span>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center gap-4 mb-6">
+        {phase !== "done" && (
+          <>
+            <button
+              onClick={() => { setRemaining(timedSec); setRound(1); setPhase("work"); setRestRemaining(0); setRunning(false); }}
+              className="w-14 h-14 rounded-full border border-[--line] flex items-center justify-center text-[--muted] hover:text-[--text] transition-colors"
+            >
+              <RotateCcw size={20} />
+            </button>
+
+            <button
+              onClick={() => setRunning((r) => !r)}
+              className="w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-2xl"
+              style={{ background: phaseColor }}
+            >
+              {running
+                ? <Pause size={28} className="text-[--ink]" />
+                : <Play size={28} fill="currentColor" className="text-[--ink]" />
+              }
+            </button>
+
+            <button
+              onClick={() => {
+                if (phase === "rest") {
+                  setRound((rd) => rd + 1);
+                  setRemaining(timedSec);
+                  setPhase("work");
+                  setRestRemaining(0);
+                } else {
+                  if (round >= roundCount) {
+                    setPhase("done");
+                    setRunning(false);
+                    onSetComplete();
+                  } else {
+                    setPhase("rest");
+                    setRestRemaining(restDuration);
+                  }
+                  setRemaining(0);
+                }
+              }}
+              className="w-14 h-14 rounded-full border border-[--line] flex items-center justify-center text-[--muted] hover:text-[--text] transition-colors"
+            >
+              <SkipForward size={20} />
+            </button>
+          </>
+        )}
+
+        {phase === "done" && (
+          <button
+            onClick={onDismiss}
+            className="px-8 py-4 rounded-2xl font-display text-xl text-[--ink] shadow-2xl"
+            style={{ background: phaseColor }}
+          >
+            Done!
+          </button>
+        )}
+      </div>
+
+      {/* Extra time buttons during rest */}
+      {phase === "rest" && (
+        <div className="flex gap-3">
+          <button onClick={() => setRestRemaining((r) => r + 30)} className="px-4 py-2 rounded-full border border-[rgba(96,165,250,0.4)] text-[rgb(96,165,250)] font-mono text-xs">+30s</button>
+          <button onClick={() => setRestRemaining((r) => r + 60)} className="px-4 py-2 rounded-full border border-[rgba(96,165,250,0.2)] text-[--muted] font-mono text-xs">+1min</button>
+        </div>
+      )}
+
+      {/* Dismiss button (always visible) */}
+      <button
+        onClick={onDismiss}
+        className="mt-6 font-mono text-xs text-[--muted] hover:text-[--text] transition-colors"
+      >
+        ← Back to workout
+      </button>
+    </motion.div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Root exported component
@@ -86,14 +287,13 @@ function WeekView({
           return (
             <motion.button
               key={i}
-              whileHover={{ scale: d.rest ? 1 : 1.02 }}
-              whileTap={{ scale: d.rest ? 1 : 0.97 }}
-              onClick={() => !d.rest && onSelectDay(isSelected ? null : i)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onSelectDay(isSelected ? null : i)}
               className={cn(
-                "card text-left transition-all duration-200",
+                "card text-left transition-all duration-200 cursor-pointer hover:border-[--line-strong]",
                 isToday && "border-[--turmeric] bg-[rgba(224,168,58,0.04)]",
                 isSelected && !isToday && "border-[--sage] bg-[rgba(127,176,140,0.06)]",
-                d.rest ? "opacity-50 cursor-default" : "cursor-pointer hover:border-[--line-strong]"
               )}
             >
               <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
@@ -126,7 +326,7 @@ function WeekView({
       </div>
 
       <AnimatePresence>
-        {selectedDay !== null && !WORKOUT_DAYS[selectedDay].rest && (
+        {selectedDay !== null && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -234,10 +434,21 @@ function DayWorkoutView({ dayIndex }: { dayIndex: number }) {
 
   if (day.rest) {
     return (
-      <div className="card text-center py-12">
-        <Coffee size={44} className="mx-auto text-[--turmeric] mb-3" />
-        <p className="font-display text-4xl text-[--turmeric] mb-2">REST</p>
-        <p className="text-[--muted] text-sm max-w-sm mx-auto leading-relaxed">{day.note}</p>
+      <div>
+        <div className="card text-center py-12 mb-4">
+          <Coffee size={44} className="mx-auto text-[--turmeric] mb-3" />
+          <p className="font-display text-4xl text-[--turmeric] mb-2">REST</p>
+          <p className="text-[--muted] text-sm max-w-sm mx-auto leading-relaxed">{day.note}</p>
+        </div>
+        {/* Sunday still has trackable flows */}
+        {(status === "idle") && <NotStartedView day={day} onStart={startSession} />}
+        {(status === "active" || status === "paused") && session && (
+          <ActiveSessionView
+            session={session} day={day} status={status} tick={tick}
+            onUpdate={updateSession} onPause={pauseSession} onResume={resumeSession} onEnd={endSession}
+          />
+        )}
+        {status === "done" && session && <SessionSummaryView session={session} day={day} onReset={resetSession} />}
       </div>
     );
   }
@@ -273,10 +484,14 @@ function DayWorkoutView({ dayIndex }: { dayIndex: number }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function NotStartedView({ day, onStart }: { day: WorkoutDay; onStart: () => void }) {
-  const totalExercises = day.blocks?.reduce((a, b) => a + b.ex.length, 0) ?? 0;
-  const totalSets = day.blocks?.reduce(
+  const totalExercises = (day.blocks?.reduce((a, b) => a + b.ex.length, 0) ?? 0)
+    + (day.warmup ? day.warmup.ex.length : 0)
+    + (day.cooldown ? day.cooldown.ex.length : 0);
+  const totalSets = (day.blocks?.reduce(
     (a, b) => b.ex.reduce((c, [, meta]) => c + parseExMeta(meta).setCount, a), 0
-  ) ?? 0;
+  ) ?? 0)
+    + (day.warmup?.ex.reduce((a, [, m]) => a + parseExMeta(m).setCount, 0) ?? 0)
+    + (day.cooldown?.ex.reduce((a, [, m]) => a + parseExMeta(m).setCount, 0) ?? 0);
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
@@ -302,6 +517,21 @@ function NotStartedView({ day, onStart }: { day: WorkoutDay; onStart: () => void
         </div>
       </div>
 
+      {/* Warmup preview */}
+      {day.warmup && (
+        <div className="card py-3 px-4 border-[rgba(224,168,58,0.2)]">
+          <p className="font-mono text-[0.6rem] uppercase tracking-wider text-[--turmeric] mb-2">🔥 {day.warmup.label}</p>
+          <div className="space-y-1">
+            {day.warmup.ex.map(([name, meta], ei) => (
+              <div key={ei} className="flex items-center gap-2 text-sm">
+                <span className="text-[--muted] flex-1 truncate">{name}</span>
+                <span className="font-mono text-[0.6rem] text-[--turmeric] flex-none">{meta}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Block preview */}
       {day.blocks?.map((block, bi) => (
         <div key={bi} className="card py-3 px-4">
@@ -311,7 +541,7 @@ function NotStartedView({ day, onStart }: { day: WorkoutDay; onStart: () => void
               const p = parseExMeta(meta);
               return (
                 <div key={ei} className="flex items-center gap-2 text-sm">
-                  <span className="text-[--text] flex-1 truncate">{name}</span>
+                  <span className="text-[--text] flex-1 min-w-0 break-words">{name}</span>
                   <span className="font-mono text-[0.6rem] text-[--muted] flex-none">
                     {p.setCount > 1 ? `${p.setCount}×` : ""} {p.isTimed ? "⏱" : ""}
                   </span>
@@ -322,6 +552,21 @@ function NotStartedView({ day, onStart }: { day: WorkoutDay; onStart: () => void
           </div>
         </div>
       ))}
+
+      {/* Cooldown preview */}
+      {day.cooldown && (
+        <div className="card py-3 px-4 border-[rgba(127,176,140,0.2)]">
+          <p className="font-mono text-[0.6rem] uppercase tracking-wider text-[--sage] mb-2">❄️ {day.cooldown.label}</p>
+          <div className="space-y-1">
+            {day.cooldown.ex.map(([name, meta], ei) => (
+              <div key={ei} className="flex items-center gap-2 text-sm">
+                <span className="text-[--muted] flex-1 truncate">{name}</span>
+                <span className="font-mono text-[0.6rem] text-[--sage] flex-none">{meta}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Start button */}
       <motion.button
@@ -363,7 +608,7 @@ function ActiveSessionView({
   return (
     <div className="space-y-4 pb-36">
       {/* Sticky session header */}
-      <div className="card bg-[rgba(224,168,58,0.06)] border-[--turmeric] sticky top-0 z-20 shadow-md">
+      <div className="card bg-[rgba(224,168,58,0.06)] border-[--turmeric] sticky top-0 z-20 shadow-md" style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="font-mono text-[0.6rem] uppercase tracking-widest text-[--turmeric]">
@@ -429,15 +674,27 @@ function ActiveSessionView({
         )}
       </AnimatePresence>
 
-      {/* Warmup */}
-      {day.warmup && <WarmupBlock warmup={day.warmup} />}
+      {/* Warmup block */}
+      {day.warmup && (
+        <ExerciseBlock
+          block={day.warmup}
+          blockKey="warmup"
+          accentColor="var(--turmeric)"
+          accentLabel="🔥 Warm-up"
+          session={session}
+          onUpdate={onUpdate}
+          tick={tick}
+          status={status}
+        />
+      )}
 
-      {/* Exercise blocks */}
+      {/* Main exercise blocks */}
       {day.blocks?.map((block, bi) => (
         <ExerciseBlock
           key={bi}
           block={block}
-          blockIndex={bi}
+          blockKey={`${bi}`}
+          accentColor="var(--turmeric)"
           session={session}
           onUpdate={onUpdate}
           tick={tick}
@@ -445,20 +702,18 @@ function ActiveSessionView({
         />
       ))}
 
-      {/* Cooldown */}
+      {/* Cooldown block */}
       {day.cooldown && (
-        <div className="card">
-          <p className="font-mono text-[0.65rem] uppercase tracking-wider text-[--muted] mb-2">
-            Cooldown (15 min)
-          </p>
-          <ul className="space-y-1">
-            {day.cooldown.map((c, i) => (
-              <li key={i} className="text-sm text-[--muted] flex items-start gap-2">
-                <span className="text-[--turmeric] flex-none">·</span>{c}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ExerciseBlock
+          block={day.cooldown}
+          blockKey="cooldown"
+          accentColor="var(--sage)"
+          accentLabel="❄️ Cooldown"
+          session={session}
+          onUpdate={onUpdate}
+          tick={tick}
+          status={status}
+        />
       )}
 
       {/* Live analytics bar */}
@@ -497,19 +752,21 @@ function ProgressRing({ done, total }: { done: number; total: number }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function ExerciseBlock({
-  block, blockIndex, session, onUpdate, tick, status,
+  block, blockKey, session, onUpdate, tick, status, accentColor, accentLabel,
 }: {
   block: WorkoutBlock;
-  blockIndex: number;
+  blockKey: string;
   session: WorkoutSession;
   onUpdate: (updater: (prev: WorkoutSession) => WorkoutSession) => void;
   tick: number;
   status: "active" | "paused";
+  accentColor?: string;
+  accentLabel?: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const blockDone = block.ex.every((_, ei) => {
-    const rec = session.exercises[`${blockIndex}-${ei}`];
+    const rec = session.exercises[`${blockKey}-${ei}`];
     return rec ? rec.sets.every((s) => s.status === "done") : false;
   });
 
@@ -526,7 +783,7 @@ function ExerciseBlock({
             )}
           </div>
           <span className={cn("font-medium text-sm", blockDone ? "text-[--sage]" : "text-[--text]")}>
-            {block.label}
+            {accentLabel ?? block.label}
           </span>
         </div>
         {collapsed
@@ -542,7 +799,7 @@ function ExerciseBlock({
             className="overflow-hidden">
             <div className="pt-3 space-y-3">
               {block.ex.map(([name, meta], ei) => {
-                const exKey = `${blockIndex}-${ei}`;
+                const exKey = `${blockKey}-${ei}`;
                 const record = session.exercises[exKey];
                 if (!record) return null;
                 return (
@@ -585,6 +842,7 @@ function ExerciseRow({
   const allDone = record.sets.every((s) => s.status === "done");
   const hasActive = record.sets.some((s) => s.status === "active");
   const isResting = record.restStartedAt !== null && record.restActualMs === null;
+  const [showFullScreenTimer, setShowFullScreenTimer] = useState(false);
 
   const now = Date.now();
   const activeSetIdx = record.sets.findIndex((s) => s.status === "active");
@@ -593,32 +851,52 @@ function ExerciseRow({
   const restRemaining = isResting && record.restStartedAt
     ? record.restTargetMs - (now - record.restStartedAt) : 0;
 
+  // Mark a set as done and start rest timer
+  const completeSet = useCallback((si: number) => {
+    const completedAt = Date.now();
+    onUpdate((session) => {
+      const ex = { ...session.exercises[exKey] };
+      const sets = [...ex.sets];
+      const set = { ...sets[si] };
+      set.status = "done";
+      set.completedAt = completedAt;
+      set.durationMs = completedAt - (set.startedAt ?? completedAt);
+      sets[si] = set;
+      ex.sets = sets;
+      // Start rest timer
+      ex.restStartedAt = completedAt;
+      ex.restActualMs = null;
+      return { ...session, exercises: { ...session.exercises, [exKey]: ex } };
+    });
+  }, [exKey, onUpdate]);
+
   const tapSet = useCallback((si: number) => {
     if (status === "paused") return;
+    const nowMs = Date.now();
     onUpdate((session) => {
       const ex = { ...session.exercises[exKey] };
       const sets = [...ex.sets];
       const set = { ...sets[si] };
       if (set.status === "idle") {
-        // End any existing rest
+        // End any active rest
         if (ex.restStartedAt && ex.restActualMs === null) {
-          ex.restActualMs = now - ex.restStartedAt;
+          ex.restActualMs = nowMs - ex.restStartedAt;
           ex.restStartedAt = null;
         }
         set.status = "active";
-        set.startedAt = Date.now();
+        set.startedAt = nowMs;
       } else if (set.status === "active") {
         set.status = "done";
-        set.completedAt = Date.now();
-        set.durationMs = Date.now() - (set.startedAt ?? Date.now());
-        ex.restStartedAt = Date.now();
+        set.completedAt = nowMs;
+        set.durationMs = nowMs - (set.startedAt ?? nowMs);
+        ex.restStartedAt = nowMs;
         ex.restActualMs = null;
       }
       sets[si] = set;
       ex.sets = sets;
       return { ...session, exercises: { ...session.exercises, [exKey]: ex } };
     });
-  }, [exKey, onUpdate, status, now]);
+  }, [exKey, onUpdate, status]);
 
   const extendRest = useCallback((extraMs: number) => {
     onUpdate((session) => {
@@ -650,145 +928,179 @@ function ExerciseRow({
     });
   }, [exKey, onUpdate]);
 
+  // Find the next idle set index
+  const nextIdleSetIdx = record.sets.findIndex((s) => s.status === "idle");
+
   return (
-    <div className={cn(
-      "rounded-2xl border p-4 transition-all duration-300",
-      allDone ? "border-[rgba(127,176,140,0.3)] bg-[rgba(127,176,140,0.03)]" :
-        hasActive ? "border-[rgba(224,168,58,0.5)] bg-[rgba(224,168,58,0.04)]" :
-          isResting ? "border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.03)]" :
-            "border-[--line]"
-    )}>
-      {/* Header */}
-      <div className="flex items-start gap-2 mb-3">
-        <div className="flex-1 min-w-0">
-          <p className={cn("font-medium text-sm leading-snug",
-            allDone ? "text-[--sage] line-through" : "text-[--text]")}>
-            {name}
-          </p>
-          <p className="font-mono text-[0.65rem] text-[--turmeric] mt-0.5">
-            {meta}{parsed.isTimed ? " · ⏱ Timed" : ""}
-          </p>
+    <>
+      <AnimatePresence>
+        {showFullScreenTimer && parsed.isTimed && parsed.timedSec && (
+          <FullScreenTimerModal
+            exerciseName={name}
+            timedSec={parsed.timedSec}
+            roundCount={parsed.setCount}
+            onSetComplete={() => {
+              // Mark all sets as done when fullscreen timer finishes
+              const nowMs = Date.now();
+              onUpdate((session) => {
+                const ex = { ...session.exercises[exKey] };
+                const sets = ex.sets.map((s) => {
+                  if (s.status !== "done") {
+                    return { ...s, status: "done" as const, completedAt: nowMs, durationMs: parsed.timedSec! * 1000 };
+                  }
+                  return s;
+                });
+                ex.sets = sets;
+                ex.restStartedAt = nowMs;
+                ex.restActualMs = null;
+                return { ...session, exercises: { ...session.exercises, [exKey]: ex } };
+              });
+            }}
+            onDismiss={() => setShowFullScreenTimer(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className={cn(
+        "rounded-2xl border p-4 transition-all duration-300",
+        allDone ? "border-[rgba(127,176,140,0.3)] bg-[rgba(127,176,140,0.03)]" :
+          hasActive ? "border-[rgba(224,168,58,0.5)] bg-[rgba(224,168,58,0.04)]" :
+            isResting ? "border-[rgba(96,165,250,0.35)] bg-[rgba(96,165,250,0.03)]" :
+              "border-[--line]"
+      )}>
+        {/* Header */}
+        <div className="flex items-start gap-2 mb-3">
+          <div className="flex-1 min-w-0">
+            <p className={cn("font-medium text-sm leading-snug",
+              allDone ? "text-[--sage] line-through" : "text-[--text]")}>
+              {name}
+            </p>
+            <p className="font-mono text-[0.65rem] text-[--turmeric] mt-0.5">
+              {meta}{parsed.isTimed ? " · ⏱ Timed" : ""}
+            </p>
+          </div>
+          {allDone && (
+            <div className="flex-none flex flex-col items-end gap-0.5">
+              <span className="font-mono text-[0.55rem] text-[--sage]">✓ Done</span>
+              {record.sets.length > 0 && (
+                <span className="font-mono text-[0.55rem] text-[--muted]">
+                  avg {formatMs(record.sets.reduce((a, s) => a + (s.durationMs ?? 0), 0) / record.sets.length)}
+                </span>
+              )}
+            </div>
+          )}
+          {/* Full-screen timer launch button */}
+          {parsed.isTimed && !allDone && parsed.timedSec && (
+            <button
+              onClick={() => setShowFullScreenTimer(true)}
+              className="flex-none ml-2 px-3 py-1.5 rounded-xl bg-[rgba(224,168,58,0.15)] border border-[--turmeric] text-[--turmeric] font-mono text-[0.6rem] flex items-center gap-1.5 hover:bg-[rgba(224,168,58,0.25)] transition-colors"
+            >
+              <Clock size={11} /> Full Screen
+            </button>
+          )}
         </div>
-        {allDone && (
-          <div className="flex-none flex flex-col items-end gap-0.5">
-            <span className="font-mono text-[0.55rem] text-[--sage]">✓ Done</span>
-            {record.sets.length > 0 && (
-              <span className="font-mono text-[0.55rem] text-[--muted]">
-                avg {formatMs(record.sets.reduce((a, s) => a + (s.durationMs ?? 0), 0) / record.sets.length)}
+
+        {/* Set chips */}
+        <div className="flex flex-wrap gap-2 mb-2">
+          {record.sets.map((set, si) => {
+            const isDone = set.status === "done";
+            const isActive = set.status === "active";
+            const locked = set.status === "idle" && si > 0 && record.sets[si - 1].status !== "done";
+            const elapsed = isActive && set.startedAt ? (Date.now() + tick * 0 - set.startedAt) : 0;
+
+            const targetOverrun = isDone && parsed.timedSec && set.durationMs
+              ? set.durationMs > parsed.timedSec * 1000 + 8000
+              : false;
+
+            return (
+              <motion.button
+                key={si}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => !locked && tapSet(si)}
+                disabled={locked || status === "paused"}
+                className={cn(
+                  "flex flex-col items-center px-3 py-2 rounded-xl font-mono text-xs transition-all duration-200 min-w-[56px]",
+                  isDone
+                    ? targetOverrun
+                      ? "bg-[rgba(201,96,63,0.15)] border border-[--paprika] text-[--paprika]"
+                      : "bg-[rgba(127,176,140,0.15)] border border-[--sage] text-[--sage]"
+                    : isActive
+                      ? "bg-[rgba(224,168,58,0.2)] border border-[--turmeric] text-[--turmeric]"
+                      : locked
+                        ? "bg-[--panel-2] border border-[--line] text-[--line] opacity-30 cursor-not-allowed"
+                        : "bg-[--panel-2] border border-[--line] text-[--muted] hover:border-[--turmeric] hover:text-[--text] cursor-pointer"
+                )}
+              >
+                <span className="text-[0.55rem] uppercase tracking-wider mb-0.5">
+                  {isDone ? "✓" : isActive ? "●" : `Set ${si + 1}`}
+                </span>
+                <span className="tabular-nums text-[0.7rem]">
+                  {isDone && set.durationMs
+                    ? formatMs(set.durationMs)
+                    : isActive
+                      ? formatMs(elapsed)
+                      : parsed.timedSec
+                        ? `${parsed.timedSec}s`
+                        : `${si + 1}`}
+                </span>
+                {isDone && parsed.timedSec && set.durationMs && (
+                  <span className={cn("text-[0.5rem] mt-0.5",
+                    targetOverrun ? "text-[--paprika]" : "text-[--sage]")}>
+                    {targetOverrun ? `+${Math.round((set.durationMs - parsed.timedSec * 1000) / 1000)}s` : "✓ Time"}
+                  </span>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Inline set analytics */}
+        {record.sets.some((s) => s.status === "done") && (
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {record.sets.map((s, si) => {
+              if (s.status !== "done" || !s.durationMs) return null;
+              const target = parsed.estimatedSetMs;
+              const diff = s.durationMs - target;
+              const good = Math.abs(diff) < 10_000;
+              return (
+                <span key={si}
+                  className={cn("font-mono text-[0.55rem] px-2 py-0.5 rounded-full",
+                    good
+                      ? "text-[--sage] bg-[rgba(127,176,140,0.1)]"
+                      : diff > 0
+                        ? "text-[--paprika] bg-[rgba(201,96,63,0.1)]"
+                        : "text-[--turmeric] bg-[rgba(224,168,58,0.1)]")}>
+                  S{si + 1}: {formatMs(s.durationMs)} {good ? "✓" : diff > 0 ? `+${Math.round(diff / 1000)}s slow` : `${Math.round(-diff / 1000)}s fast`}
+                </span>
+              );
+            })}
+            {record.restExtensions > 0 && (
+              <span className="font-mono text-[0.55rem] px-2 py-0.5 rounded-full text-[--paprika] bg-[rgba(201,96,63,0.08)]">
+                +{record.restExtensions} rest ext.
               </span>
             )}
           </div>
         )}
-      </div>
 
-      {/* Inline interval timer for timed exercises */}
-      {parsed.isTimed && !allDone && parsed.timedSec && (
-        <div className="mb-3">
-          <InlineIntervalTimer timedSec={parsed.timedSec} roundCount={record.setCount} />
-        </div>
-      )}
-
-      {/* Set chips */}
-      <div className="flex flex-wrap gap-2 mb-2">
-        {record.sets.map((set, si) => {
-          const isDone = set.status === "done";
-          const isActive = set.status === "active";
-          const locked = set.status === "idle" && si > 0 && record.sets[si - 1].status !== "done";
-          const elapsed = isActive && set.startedAt ? (tick, Date.now() - set.startedAt) : 0;
-
-          // For timed sets: show target time
-          const targetOverrun = isDone && parsed.timedSec && set.durationMs
-            ? set.durationMs > parsed.timedSec * 1000 + 8000
-            : false;
-
-          return (
-            <motion.button
-              key={si}
-              whileTap={{ scale: 0.92 }}
-              onClick={() => !locked && tapSet(si)}
-              disabled={locked || status === "paused"}
-              className={cn(
-                "flex flex-col items-center px-3 py-2 rounded-xl font-mono text-xs transition-all duration-200 min-w-[56px]",
-                isDone
-                  ? targetOverrun
-                    ? "bg-[rgba(201,96,63,0.15)] border border-[--paprika] text-[--paprika]"
-                    : "bg-[rgba(127,176,140,0.15)] border border-[--sage] text-[--sage]"
-                  : isActive
-                    ? "bg-[rgba(224,168,58,0.2)] border border-[--turmeric] text-[--turmeric]"
-                    : locked
-                      ? "bg-[--panel-2] border border-[--line] text-[--line] opacity-30 cursor-not-allowed"
-                      : "bg-[--panel-2] border border-[--line] text-[--muted] hover:border-[--turmeric] hover:text-[--text] cursor-pointer"
-              )}
-            >
-              <span className="text-[0.55rem] uppercase tracking-wider mb-0.5">
-                {isDone ? "✓" : isActive ? "●" : `Set ${si + 1}`}
-              </span>
-              <span className="tabular-nums text-[0.7rem]">
-                {isDone && set.durationMs
-                  ? formatMs(set.durationMs)
-                  : isActive
-                    ? formatMs(elapsed)
-                    : parsed.timedSec
-                      ? `${parsed.timedSec}s`
-                      : `${si + 1}`}
-              </span>
-              {isDone && parsed.timedSec && set.durationMs && (
-                <span className={cn("text-[0.5rem] mt-0.5",
-                  targetOverrun ? "text-[--paprika]" : "text-[--sage]")}>
-                  {targetOverrun ? `+${Math.round((set.durationMs - parsed.timedSec * 1000) / 1000)}s` : "✓ Time"}
-                </span>
-              )}
-            </motion.button>
-          );
-        })}
-      </div>
-
-      {/* Inline set analytics */}
-      {record.sets.some((s) => s.status === "done") && (
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {record.sets.map((s, si) => {
-            if (s.status !== "done" || !s.durationMs) return null;
-            const target = parsed.estimatedSetMs;
-            const diff = s.durationMs - target;
-            const good = Math.abs(diff) < 10_000;
-            return (
-              <span key={si}
-                className={cn("font-mono text-[0.55rem] px-2 py-0.5 rounded-full",
-                  good
-                    ? "text-[--sage] bg-[rgba(127,176,140,0.1)]"
-                    : diff > 0
-                      ? "text-[--paprika] bg-[rgba(201,96,63,0.1)]"
-                      : "text-[--turmeric] bg-[rgba(224,168,58,0.1)]")}>
-                S{si + 1}: {formatMs(s.durationMs)} {good ? "✓" : diff > 0 ? `+${Math.round(diff / 1000)}s slow` : `${Math.round(-diff / 1000)}s fast`}
-              </span>
-            );
-          })}
-          {record.restExtensions > 0 && (
-            <span className="font-mono text-[0.55rem] px-2 py-0.5 rounded-full text-[--paprika] bg-[rgba(201,96,63,0.08)]">
-              +{record.restExtensions} rest ext.
-            </span>
+        {/* Rest countdown */}
+        <AnimatePresence>
+          {isResting && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}
+              className="overflow-hidden">
+              <RestCountdown
+                restRemaining={restRemaining}
+                restTargetMs={record.restTargetMs}
+                restExtensions={record.restExtensions}
+                onExtend={extendRest}
+                onSkip={skipRest}
+              />
+            </motion.div>
           )}
-        </div>
-      )}
-
-      {/* Rest countdown */}
-      <AnimatePresence>
-        {isResting && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}
-            className="overflow-hidden">
-            <RestCountdown
-              restRemaining={restRemaining}
-              restTargetMs={record.restTargetMs}
-              restExtensions={record.restExtensions}
-              onExtend={extendRest}
-              onSkip={skipRest}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        </AnimatePresence>
+      </div>
+    </>
   );
 }
 
@@ -858,102 +1170,7 @@ function RestCountdown({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Inline Interval Timer (for planks, holds, timed circuits)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function InlineIntervalTimer({ timedSec, roundCount }: { timedSec: number; roundCount: number }) {
-  const [running, setRunning] = useState(false);
-  const [round, setRound] = useState(1);
-  const [remaining, setRemaining] = useState(timedSec);
-  const [done, setDone] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (running && !done) {
-      intervalRef.current = setInterval(() => {
-        setRemaining((r) => {
-          if (r <= 1) {
-            setRound((rd) => {
-              if (rd >= roundCount) {
-                setRunning(false);
-                setDone(true);
-                return rd;
-              }
-              return rd + 1;
-            });
-            return timedSec;
-          }
-          return r - 1;
-        });
-      }, 1000);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, done, roundCount, timedSec]);
-
-  const reset = () => {
-    setRunning(false);
-    setRound(1);
-    setRemaining(timedSec);
-    setDone(false);
-  };
-
-  const pct = remaining / timedSec;
-  const r = 22, cx = 26, cy = 26;
-  const circ = 2 * Math.PI * r;
-
-  return (
-    <div className="p-3 rounded-xl border border-[rgba(224,168,58,0.3)] bg-[rgba(224,168,58,0.04)]">
-      <div className="flex items-center gap-4">
-        <svg width={52} height={52} className="-rotate-90 flex-none">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(224,168,58,0.12)" strokeWidth={3.5} />
-          <motion.circle cx={cx} cy={cy} r={r} fill="none"
-            stroke={done ? "var(--sage)" : "var(--turmeric)"}
-            strokeWidth={3.5} strokeLinecap="round"
-            strokeDasharray={`${circ}`}
-            animate={{ strokeDashoffset: circ * (1 - pct) }}
-            transition={{ duration: 0.8 }}
-          />
-          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
-            fill={done ? "var(--sage)" : "var(--turmeric)"}
-            style={{ fontSize: done ? 9 : 11, fontFamily: "var(--font-mono)", transform: `rotate(90deg)`, transformOrigin: `${cx}px ${cy}px` }}>
-            {done ? "✓" : remaining}
-          </text>
-        </svg>
-
-        <div className="flex-1">
-          <p className="font-mono text-[0.65rem] text-[--muted] mb-2">
-            {done
-              ? `✓ All ${roundCount} rounds complete!`
-              : `Round ${round} of ${roundCount} · ${timedSec}s target`}
-          </p>
-          <div className="flex items-center gap-2">
-            {!done && (
-              running ? (
-                <button onClick={() => setRunning(false)}
-                  className="px-3 py-1.5 rounded-full bg-[rgba(224,168,58,0.15)] border border-[--turmeric] text-[--turmeric] font-mono text-[0.6rem] flex items-center gap-1.5">
-                  <Pause size={10} /> Pause
-                </button>
-              ) : (
-                <button onClick={() => setRunning(true)}
-                  className="px-3 py-1.5 rounded-full bg-[--turmeric] text-[--ink] font-mono text-[0.6rem] font-bold flex items-center gap-1.5">
-                  <Play size={10} fill="currentColor" />
-                  {remaining === timedSec && round === 1 ? "Start Timer" : "Resume"}
-                </button>
-              )
-            )}
-            <button onClick={reset}
-              className="p-1.5 rounded-full border border-[--line] text-[--muted] hover:text-[--text] transition-colors">
-              <RotateCcw size={12} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Live Analytics Bar — sticky bottom
+// Live Analytics Bar — sticky bottom with backdrop blur
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function LiveAnalyticsBar({ stats, status }: { stats: SessionStats; status: string }) {
@@ -970,7 +1187,11 @@ function LiveAnalyticsBar({ stats, status }: { stats: SessionStats; status: stri
 
   return (
     <div className="fixed bottom-[64px] left-0 right-0 z-30 px-3 md:left-[260px]">
-      <motion.div layout className="rounded-2xl border border-[--line]/60 bg-[--panel]/80 backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden">
+      <motion.div
+        layout
+        className="rounded-2xl border border-[--line]/60 overflow-hidden shadow-2xl shadow-black/50"
+        style={{ backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", background: "rgba(9,24,26,0.75)" }}
+      >
         <button onClick={() => setExpanded((e) => !e)} className="w-full px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -1003,7 +1224,7 @@ function LiveAnalyticsBar({ stats, status }: { stats: SessionStats; status: stri
               className="overflow-hidden px-4 pb-4">
               <div className="border-t border-[--line] pt-3 grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {analyticsItems.map(({ label, val, sub, color }) => (
-                  <div key={label} className="bg-[--panel-2] rounded-xl p-2.5 text-center">
+                  <div key={label} className="bg-[rgba(232,229,217,0.05)] rounded-xl p-2.5 text-center">
                     <p className="font-mono text-[0.5rem] uppercase tracking-wider text-[--muted] mb-1">{label}</p>
                     <p className={cn("font-display text-lg leading-none", color)}>{val}</p>
                     {sub && <p className="font-mono text-[0.5rem] text-[--muted] mt-0.5">{sub}</p>}
@@ -1061,6 +1282,12 @@ function SessionSummaryView({
     });
   });
   const maxMs = Math.max(...fatigueCurve.map((f) => f.ms), 1);
+
+  // Build all exercise breakdown including warmup & cooldown
+  const allBlocks: { label: string; key: string; block: WorkoutBlock }[] = [];
+  if (day.warmup) allBlocks.push({ label: "Warm-up", key: "warmup", block: day.warmup });
+  (day.blocks ?? []).forEach((b, bi) => allBlocks.push({ label: b.label, key: `${bi}`, block: b }));
+  if (day.cooldown) allBlocks.push({ label: "Cooldown", key: "cooldown", block: day.cooldown });
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pb-8">
@@ -1135,24 +1362,24 @@ function SessionSummaryView({
         </div>
       )}
 
-      {/* Per-exercise breakdown */}
+      {/* Per-exercise breakdown (all blocks including warmup/cooldown) */}
       <div className="card">
         <p className="font-mono text-[0.65rem] uppercase tracking-wider text-[--muted] mb-3">
           Exercise Breakdown
         </p>
         <div className="space-y-0">
-          {(day.blocks ?? []).flatMap((block, bi) =>
+          {allBlocks.flatMap(({ block, key, label: blockLabel }) =>
             block.ex.map(([name, meta], ei) => {
-              const rec = session.exercises[`${bi}-${ei}`];
+              const rec = session.exercises[`${key}-${ei}`];
               if (!rec) return null;
               const done = rec.sets.filter((s) => s.status === "done");
               const avgMs = done.length > 0 ? done.reduce((a, s) => a + (s.durationMs ?? 0), 0) / done.length : 0;
-              const parsed = parseExMeta(meta);
+              const parsedMeta = parseExMeta(meta);
               return (
-                <div key={`${bi}-${ei}`}
+                <div key={`${key}-${ei}`}
                   className="flex items-center gap-3 py-3 border-b border-[--line] last:border-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-[--text] truncate">{name}</p>
+                    <p className="text-sm text-[--text] break-words">{name}</p>
                     <p className="font-mono text-[0.6rem] text-[--muted]">{meta}</p>
                   </div>
                   <div className="flex gap-3 flex-none text-right">
@@ -1188,39 +1415,5 @@ function SessionSummaryView({
         <RefreshCw size={14} /> Start New Session
       </button>
     </motion.div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Warmup Block (collapsible)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function WarmupBlock({ warmup }: { warmup: string[] }) {
-  const [collapsed, setCollapsed] = useState(true);
-  return (
-    <div className="card">
-      <button onClick={() => setCollapsed((c) => !c)} className="w-full flex items-center justify-between">
-        <span className="font-medium text-sm text-[--muted]">Warm-up (10 min)</span>
-        {collapsed
-          ? <ChevronDown size={16} className="text-[--muted]" />
-          : <ChevronUp size={16} className="text-[--muted]" />}
-      </button>
-      <AnimatePresence initial={false}>
-        {!collapsed && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-            className="overflow-hidden">
-            <ul className="pt-3 space-y-1">
-              {warmup.map((w, i) => (
-                <li key={i} className="text-sm text-[--muted] flex items-start gap-2">
-                  <span className="text-[--turmeric] flex-none">·</span>{w}
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }

@@ -169,18 +169,22 @@ export function sessionKey(dayIndex: number): string {
 // ── Init a fresh session from a WorkoutDay ──────────────────────────────────────
 
 export function initSession(
-  day: { blocks?: { label: string; ex: [string, string][] }[] },
+  day: {
+    warmup?: { label: string; ex: [string, string][] };
+    blocks?: { label: string; ex: [string, string][] }[];
+    cooldown?: { label: string; ex: [string, string][] };
+  },
   dayIndex: number
 ): WorkoutSession {
   const exercises: Record<string, ExerciseRecord> = {};
-  (day.blocks ?? []).forEach((block, bi) => {
+
+  const addBlock = (block: { label: string; ex: [string, string][] }, prefix: string) => {
     const restMs = getRestMs(block.label);
     const blockRounds = parseBlockRounds(block.label);
     block.ex.forEach(([, meta], ei) => {
       const p = parseExMeta(meta);
-      // For circuit blocks with rounds, multiply set count
       const effectiveCount = blockRounds > 1 && p.setCount === 1 ? blockRounds : p.setCount;
-      const key = `${bi}-${ei}`;
+      const key = `${prefix}-${ei}`;
       exercises[key] = {
         key,
         sets: Array.from({ length: effectiveCount }, () => ({
@@ -195,7 +199,12 @@ export function initSession(
         setCount: effectiveCount,
       };
     });
-  });
+  };
+
+  if (day.warmup) addBlock(day.warmup, 'warmup');
+  (day.blocks ?? []).forEach((block, bi) => addBlock(block, `${bi}`));
+  if (day.cooldown) addBlock(day.cooldown, 'cooldown');
+
   return { dayIndex, startedAt: Date.now(), endedAt: null, exercises, pausedAt: null, totalPausedMs: 0 };
 }
 

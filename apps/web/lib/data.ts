@@ -447,167 +447,229 @@ export type WorkoutDay = {
   focus: string;
   rest: boolean;
   note?: string;
-  warmup?: string[];
+  warmup?: WorkoutBlock;
   blocks?: WorkoutBlock[];
-  cooldown?: string[];
+  cooldown?: WorkoutBlock;
 };
 
 export const WORKOUT_DAYS: WorkoutDay[] = [
-  { name: "Sunday", time: "Rest Day", focus: "Full Recovery", rest: true,
-    note: "No structured training. Optional 15–20 min gentle walk or light stretching. Sleep is the priority today — this is when the muscle you trained all week actually rebuilds. Eat at your target calories, not under." },
-
-  { name: "Monday", time: "6:30 – 8:30 AM", focus: "Push Strength + Core", rest: false,
-    warmup: [
-      "Jump rope – 3 min steady pace",
-      "Arm circles forward & backward – 10 each direction",
-      "Shoulder CARs (Controlled Articular Rotations) – 5 reps/side",
-      "Bodyweight squats – 15 reps (to warm hips)",
-      "Push-up to downdog – 8 reps slow",
-    ],
-    blocks: [
-      { label: "Main Lifts (rest 60–90 sec between sets)", ex: [
-        ["Push-ups — standard / decline / diamond (alternate daily)", "4 × 15–20"],
-        ["Dumbbell shoulder press (or pike push-up if no weights)", "4 × 10"],
-        ["Incline dumbbell press (or elevated push-up)", "3 × 10"],
-        ["Dips — parallel bars or chair-assisted", "3 × 12"],
-      ]},
-      { label: "Core Finisher (rest 45 sec between sets)", ex: [
-        ["Plank-to-push-up (hold 1 sec at top of each rep)", "3 × 12"],
-        ["Hanging leg raises (or lying if no bar)", "3 × 15"],
-      ]},
-    ],
-    cooldown: [
-      "Chest doorway stretch – 45 sec each side",
-      "Child's pose – 1 min",
-      "Shoulder cross-body stretch – 30 sec/side",
-      "Wrist flexor / extensor stretch – 30 sec each",
+  // ── Sunday ─────────────────────────────────────────────────────────────────
+  { name: "Sunday", time: "20–30 min", focus: "Rest + Flexibility", rest: true,
+    note: "Active recovery only. Work through all 4 flows below at a relaxed pace.",
+    warmup: { label: "Hip Flow (8 min)", ex: [
+      ["90/90 switches", "8 reps/side"],
+      ["Pigeon pose", "1 × 60 sec/side"],
+      ["Couch stretch", "1 × 60 sec/side"],
     ]},
-
-  { name: "Tuesday", time: "6:30 – 8:30 AM", focus: "Conditioning Circuit (HIIT)", rest: false,
-    warmup: [
-      "Jump rope – 3 min easy",
-      "High knees – 30 sec",
-      "Dynamic walking lunges – 10/side",
-      "Hip circles – 30 sec each direction",
-    ],
     blocks: [
-      { label: "Circuit — 4–5 rounds · 30s work / 30s rest · use the timer ↓", ex: [
-        ["Burpees (full range — chest to floor, jump at top)", "30 sec"],
-        ["Mountain climbers (drive knee to opposite elbow)", "30 sec"],
-        ["Jump squats (land soft, full depth)", "30 sec"],
-        ["Jump rope (or tuck jumps if no rope)", "30 sec"],
-        ["Plank hold (squeeze glutes and abs, don't sag)", "30 sec"],
+      { label: "Shoulder Flow (6 min)", ex: [
+        ["Shoulder dislocates — band or towel overhead to behind", "10 slow reps"],
+        ["Wall slides", "10 reps"],
+        ["Thread-the-needle", "8 reps/side"],
       ]},
-      { label: "Cardio Finisher", ex: [
-        ["Steady jog or brisk incline walk", "10–15 min"],
+      { label: "Spine Flow (5 min)", ex: [
+        ["Cat-cow", "10 slow reps"],
+        ["Thoracic rotations", "8 reps/side"],
+        ["Cobra hold", "1 × 30 sec"],
       ]},
     ],
-    cooldown: [
-      "Standing quad stretch – 30 sec/side",
-      "Seated hamstring stretch – 45 sec/side",
-      "Hip flexor kneeling stretch – 45 sec/side",
-      "Deep belly breathing – 1 min",
+    cooldown: { label: "Posterior Chain (5 min)", ex: [
+      ["Standing forward fold", "1 × 60 sec"],
+      ["Seated straddle", "1 × 60 sec"],
     ]},
+  },
 
-  { name: "Wednesday", time: "6:30 – 8:30 AM", focus: "Pull Strength + Core", rest: false,
-    warmup: [
-      "Band pull-aparts (or towel pull-aparts) – 15 reps",
-      "Cat-cow – 1 min slow",
-      "Scapular pull-ups – 10 reps (hang, just depress shoulders)",
-      "Jump rope – 2 min",
-    ],
-    blocks: [
-      { label: "Main Lifts (rest 60–90 sec between sets)", ex: [
-        ["Pull-ups — assisted if needed (band or negative reps)", "4 × 8–10"],
-        ["Bent-over dumbbell rows (brace core, flat back)", "4 × 10/arm"],
-        ["Face pulls — cable, band or towel-on-doorknob", "3 × 15"],
-        ["Bicep curls — dumbbell or band", "3 × 12"],
-      ]},
-      { label: "Core Finisher", ex: [
-        ["Russian twists (add light dumbbell when easy)", "3 × 20"],
-        ["Hollow body hold (press lower back to floor)", "3 × 30 sec"],
-      ]},
-    ],
-    cooldown: [
-      "Lat stretch — reach arm overhead, lean to side on wall – 45 sec/side",
-      "Bicep/forearm stretch – 30 sec/side",
-      "Seated spinal twist – 45 sec/side",
+  // ── Monday ─────────────────────────────────────────────────────────────────
+  { name: "Monday", time: "~75 min", focus: "Push — Strength", rest: false,
+    warmup: { label: "Warm-up (8–10 min)", ex: [
+      ["Light cardio", "5 min"],
+      ["Shoulder CARs (Controlled Articular Rotations)", "5 reps/side"],
+      ["Thoracic CARs", "5 reps/side"],
+      ["Barbell bench press ramp-up sets", "2 × 5 (light)"],
     ]},
+    blocks: [
+      { label: "Main Strength (rest 90–120 sec)", ex: [
+        ["Barbell / Dumbbell Bench Press", "4 × 5"],
+        ["Standing Overhead Press", "4 × 6"],
+        ["Weighted Dips", "3 × 6–8"],
+        ["Incline Dumbbell Press", "3 × 10"],
+        ["Lateral Raises", "3 × 15"],
+        ["Overhead Triceps Extension", "3 × 12"],
+      ]},
+      { label: "Core (rest 45 sec)", ex: [
+        ["Hanging Leg Raises", "3 × 12"],
+        ["Pallof Press", "3 × 10/side"],
+      ]},
+      { label: "Forearm / Wrist", ex: [
+        ["Reverse Wrist Curls (extensor balance)", "3 × 15"],
+      ]},
+    ],
+    cooldown: { label: "Cooldown (10 min)", ex: [
+      ["Doorway chest stretch", "1 × 45 sec/side"],
+      ["Shoulder CARs", "5 reps/side"],
+      ["Thoracic extension over bench", "1 × 60 sec"],
+    ]},
+  },
 
-  { name: "Thursday", time: "6:30 – 8:30 AM", focus: "Legs + Core", rest: false,
-    warmup: [
-      "Bodyweight squats – 15 reps (warm up the pattern)",
-      "Leg swings front-back – 10/side",
-      "Leg swings side-to-side – 10/side",
-      "Walking lunges – 10/side",
-      "Ankle circles – 30 sec/side",
-    ],
-    blocks: [
-      { label: "Main Lifts (rest 75–90 sec between sets)", ex: [
-        ["Goblet squats (hold dumbbell at chest, full depth)", "4 × 12"],
-        ["Bulgarian split squats — rear foot elevated on chair", "3 × 10/leg"],
-        ["Romanian deadlifts — hinge at hips, soft knee, weight close", "3 × 10"],
-        ["Jump squats or box jumps — explosive, absorb landing", "3 × 10"],
-      ]},
-      { label: "Lower Body Finisher", ex: [
-        ["Calf raises — slow 2-up, 2-down tempo", "3 × 15–20"],
-        ["Plank variations — side/front/RKC alternate each set", "3 × 45 sec"],
-      ]},
-    ],
-    cooldown: [
-      "Standing quad stretch – 30 sec/side",
-      "Figure-4 glute stretch (lying piriformis) – 45 sec/side",
-      "Calf stretch on wall (bent knee + straight knee) – 30 sec each",
-      "Child's pose – 1 min",
+  // ── Tuesday ────────────────────────────────────────────────────────────────
+  { name: "Tuesday", time: "~75 min", focus: "Pull — Strength", rest: false,
+    warmup: { label: "Warm-up", ex: [
+      ["Light cardio", "5 min"],
+      ["Band pull-aparts", "15 reps"],
+      ["Hip hinge drill (slow Romanian deadlift bodyweight)", "10 reps"],
     ]},
+    blocks: [
+      { label: "Main Strength (rest 90–120 sec)", ex: [
+        ["Romanian Deadlift", "4 × 5"],
+        ["Weighted / Assisted Pull-ups", "4 × 6"],
+        ["Barbell / Dumbbell Bent-over Row", "3 × 8"],
+        ["Chest-Supported Row", "3 × 10"],
+        ["Face Pulls", "3 × 15"],
+        ["Dumbbell Curls", "3 × 12"],
+      ]},
+      { label: "Core (rest 45 sec)", ex: [
+        ["Hollow Body Hold", "3 × 30 sec"],
+        ["Dead Bug", "3 × 10/side"],
+        ["Weighted Cable Crunch", "3 × 12–15"],
+        ["Ab Wheel Rollout", "3 × 8–10"],
+      ]},
+      { label: "Forearm / Wrist", ex: [
+        ["Farmer's Carries (heavy)", "3 × 40m"],
+        ["Dead Hangs — max hold", "3 × max"],
+      ]},
+    ],
+    cooldown: { label: "Cooldown", ex: [
+      ["Lat stretch (arm overhead, lean to side)", "1 × 45 sec/side"],
+      ["90/90 hip stretch", "1 × 45 sec/side"],
+      ["Supine spinal twist", "1 × 45 sec/side"],
+    ]},
+  },
 
-  { name: "Friday", time: "Evening, ~6:00 – 8:00 PM", focus: "Boxing / HIIT", rest: false,
-    warmup: [
-      "Shadow boxing – 3 min easy pace (footwork only, light punches)",
-      "Arm circles & wrist rolls – 1 min",
-      "Jump rope – 2 min",
-    ],
-    blocks: [
-      { label: "Boxing Conditioning", ex: [
-        ["Heavy bag — jab-cross-hook combos, change every 30 sec. No bag: shadow box", "4 × 3 min (1 min rest between rounds)"],
-        ["Jump rope — fast intervals: 30s sprint / 15s easy", "5 min total"],
-        ["Sprint intervals — outdoors or on the spot (high knees max pace)", "10 × 20 sec on / 40 sec off"],
-      ]},
-      { label: "Ab Finisher — 3 rounds · 30 sec rest between rounds", ex: [
-        ["Bicycle crunches — slow and deliberate, touch elbow to knee", "20 reps"],
-        ["Lying leg raises — lower slowly, don't let heels touch", "15 reps"],
-      ]},
-    ],
-    cooldown: [
-      "Hip flexor stretch kneeling – 45 sec/side",
-      "Shoulder & chest doorway stretch – 45 sec",
-      "Slow walk – 3 min",
-      "Box breathing (4-4-4-4) – 2 min",
+  // ── Wednesday ──────────────────────────────────────────────────────────────
+  { name: "Wednesday", time: "~75 min", focus: "Legs — Strength", rest: false,
+    warmup: { label: "Warm-up", ex: [
+      ["Light cardio", "5 min"],
+      ["Bodyweight squats", "15 reps"],
+      ["Leg swings (front-back)", "10/side"],
+      ["Leg swings (side-to-side)", "10/side"],
     ]},
+    blocks: [
+      { label: "Main Strength (rest 90–120 sec)", ex: [
+        ["Back Squat", "4 × 5"],
+        ["Romanian Deadlift (lighter)", "3 × 8"],
+        ["Weighted Walking Lunges", "3 × 10/leg"],
+        ["Leg Curl", "3 × 12"],
+        ["Calf Raises", "4 × 15"],
+        ["Side Plank / Copenhagen Plank", "3 × 20 sec/side"],
+      ]},
+      { label: "Core (rest 45 sec)", ex: [
+        ["Weighted Plank", "3 × 45 sec"],
+      ]},
+      { label: "Forearm / Wrist", ex: [
+        ["Wrist Roller — flexion direction", "2 reps"],
+        ["Wrist Roller — extension direction", "2 reps"],
+      ]},
+    ],
+    cooldown: { label: "Cooldown (12 min)", ex: [
+      ["Couch stretch", "1 × 60 sec/side"],
+      ["Pigeon pose", "1 × 60 sec/side"],
+      ["Deep squat hold", "1 × 60 sec"],
+    ]},
+  },
 
-  { name: "Saturday", time: "Evening, ~6:00 – 8:00 PM", focus: "Full-Body Circuit + Mobility", rest: false,
-    warmup: [
-      "Jump rope – 3 min",
-      "World's greatest stretch – 5/side (lunge, twist, reach)",
-      "Bodyweight squats – 15 reps",
-    ],
-    blocks: [
-      { label: "Full-Body Circuit — 3–4 rounds · 45 sec rest between exercises", ex: [
-        ["Push-ups — max quality reps", "15 reps"],
-        ["Bodyweight squats", "20 reps"],
-        ["Inverted rows (under a table) or dumbbell rows", "12 reps"],
-        ["Plank — brace like you're about to be punched", "45 sec"],
-      ]},
-      { label: "Gymnastics-Style Mobility Block (Holland's functional base)", ex: [
-        ["Deep squat hold — hands clasped, elbows press knees out", "2 × 1 min"],
-        ["Shoulder dislocates — band or towel overhead and behind", "2 × 10 slow"],
-        ["Bridge hold — push hips up, squeeze glutes hard", "2 × 30 sec"],
-      ]},
-    ],
-    cooldown: [
-      "Full-body stretch flow – 10 min (go through everything: hips, hamstrings, chest, lats, thoracic)",
-      "Box breathing – 2 min",
+  // ── Thursday ───────────────────────────────────────────────────────────────
+  { name: "Thursday", time: "~70 min", focus: "Push — Hypertrophy", rest: false,
+    warmup: { label: "Warm-up (same as Monday, lighter)", ex: [
+      ["Light cardio", "5 min"],
+      ["Shoulder CARs", "5 reps/side"],
+      ["Thoracic CARs", "5 reps/side"],
     ]},
+    blocks: [
+      { label: "Hypertrophy (rest 60–90 sec)", ex: [
+        ["Incline Dumbbell Press", "4 × 10"],
+        ["Dumbbell / Machine Shoulder Press", "3 × 12"],
+        ["Cable Flyes", "3 × 15"],
+        ["Lateral Raises (drop set on final set)", "4 × 15"],
+        ["Triceps Rope Pushdown", "3 × 15"],
+        ["Diamond Push-ups — AMRAP", "2 × AMRAP"],
+      ]},
+      { label: "Core (rest 45 sec)", ex: [
+        ["Weighted Sit-ups", "3 × 15"],
+      ]},
+      { label: "Forearm / Wrist", ex: [
+        ["Barbell Wrist Curls", "3 × 15"],
+        ["Reverse Curls", "3 × 12"],
+      ]},
+    ],
+    cooldown: { label: "Cooldown (same as Monday)", ex: [
+      ["Doorway chest stretch", "1 × 45 sec/side"],
+      ["Shoulder CARs", "5 reps/side"],
+      ["Thoracic extension over bench", "1 × 60 sec"],
+    ]},
+  },
+
+  // ── Friday ─────────────────────────────────────────────────────────────────
+  { name: "Friday", time: "~70 min (PM)", focus: "Pull — Hypertrophy", rest: false,
+    warmup: { label: "Warm-up", ex: [
+      ["Shoulder CARs", "5 reps/side"],
+      ["Band pull-aparts", "15 reps"],
+      ["Light cardio", "5 min"],
+    ]},
+    blocks: [
+      { label: "Hypertrophy (rest 60–90 sec)", ex: [
+        ["Lat Pulldown / Wide-grip Pull-up", "4 × 10"],
+        ["Single-arm Dumbbell Row", "3 × 12/side"],
+        ["Cable Row (varied grip)", "3 × 12"],
+        ["Rear Delt Flyes", "3 × 15"],
+        ["Hammer Curls", "3 × 12"],
+        ["Face Pulls", "3 × 20"],
+      ]},
+      { label: "Core (rest 45 sec)", ex: [
+        ["Cable Woodchoppers", "3 × 12/side"],
+        ["Weighted Decline Sit-up", "3 × 12"],
+      ]},
+      { label: "Forearm / Wrist", ex: [
+        ["Plate Pinch Hold", "3 × 25 sec"],
+      ]},
+    ],
+    cooldown: { label: "Cooldown (~10 min)", ex: [
+      ["Lat stretch", "1 × 45 sec/side"],
+      ["90/90 hip stretch", "1 × 45 sec/side"],
+      ["Supine spinal twist", "1 × 45 sec/side"],
+    ]},
+  },
+
+  // ── Saturday ───────────────────────────────────────────────────────────────
+  { name: "Saturday", time: "~85 min (PM)", focus: "Legs (Hypertrophy) + Conditioning", rest: false,
+    warmup: { label: "Warm-up", ex: [
+      ["Light cardio", "5 min"],
+      ["Bodyweight squats", "15 reps"],
+      ["Leg swings (front-back)", "10/side"],
+    ]},
+    blocks: [
+      { label: "Hypertrophy (rest 60–90 sec)", ex: [
+        ["Front Squat or Leg Press", "4 × 10"],
+        ["Bulgarian Split Squats", "3 × 10/leg"],
+        ["Leg Extension", "3 × 15"],
+        ["Leg Curl", "3 × 15"],
+        ["Standing Calf Raise", "4 × 15"],
+        ["Glute Bridge / Hip Thrust", "3 × 12"],
+      ]},
+      { label: "Forearm / Wrist", ex: [
+        ["Farmer's Carries (heavy)", "3 × 40m"],
+      ]},
+      { label: "Conditioning Finisher — Scaled Cindy AMRAP", ex: [
+        ["Pull-ups (or banded / ring rows)", "5 reps"],
+        ["Push-ups", "10 reps"],
+        ["Air squats", "15 reps"],
+      ]},
+    ],
+    cooldown: { label: "Cooldown", ex: [
+      ["Couch stretch", "1 × 60 sec/side"],
+      ["Pigeon pose", "1 × 60 sec/side"],
+      ["Standing forward fold", "1 × 60 sec"],
+    ]},
+  },
 ];
 
 // ============================================================
