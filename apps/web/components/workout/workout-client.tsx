@@ -27,10 +27,12 @@ type SessionStatus = "idle" | "active" | "paused" | "done";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function WorkoutPlayerModal({
-  session, day, tick, onUpdate, onDismiss
+  session, day, tick, status, onUpdate, onPause, onResume, onDismiss
 }: {
-  session: WorkoutSession; day: WorkoutDay; tick: number;
+  session: WorkoutSession; day: WorkoutDay; tick: number; status: "active" | "paused";
   onUpdate: (updater: (prev: WorkoutSession) => WorkoutSession) => void;
+  onPause: () => void;
+  onResume: () => void;
   onDismiss: () => void;
 }) {
   const sequence = useMemo(() => {
@@ -112,6 +114,31 @@ function WorkoutPlayerModal({
     });
   }, [onUpdate]);
 
+  const restartSet = useCallback((exKey: string) => {
+    onUpdate((s) => {
+      const ex = { ...s.exercises[exKey] };
+      const nowMs = Date.now();
+      if (ex.restStartedAt && ex.restActualMs === null) {
+        // Restart rest
+        return {
+          ...s,
+          exercises: { ...s.exercises, [exKey]: { ...ex, restStartedAt: nowMs } }
+        };
+      } else {
+        const activeIdx = ex.sets.findIndex(set => set.status === "active");
+        if (activeIdx >= 0) {
+          const sets = [...ex.sets];
+          sets[activeIdx] = { ...sets[activeIdx], startedAt: nowMs };
+          return {
+            ...s,
+            exercises: { ...s.exercises, [exKey]: { ...ex, sets } }
+          };
+        }
+      }
+      return s;
+    });
+  }, [onUpdate]);
+
   if (!cursor) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -181,7 +208,14 @@ function WorkoutPlayerModal({
       <div className="w-full max-w-sm rounded-[2.5rem] overflow-hidden relative"
         style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 32px 64px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(255,255,255,0.06) inset", backdropFilter: "blur(20px)" }}>
         
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+        {/* Top bar with back button */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-0">
+          <button onClick={onDismiss} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+            <ArrowLeft size={20} color="rgba(255,255,255,0.7)" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between px-6 pt-2 pb-2">
           <div className="px-3 py-1 rounded-full font-mono text-[0.6rem] uppercase tracking-widest font-semibold" style={{ background: accentRgba, color: accentHex }}>
             {isIdle ? "Waiting to Start" : isRest ? "😴 Rest" : "⚡ Active Set"}
           </div>
@@ -227,19 +261,52 @@ function WorkoutPlayerModal({
                Start Set {nextIdleSetIdx + 1}
              </button>
           )}
-          {isWork && !parsed.isTimed && (
-             <button onClick={() => tapSet(exKey, activeSetIdx)}
-               className="px-10 py-3.5 rounded-2xl font-display text-lg transition-all active:scale-95"
-               style={{ background: `linear-gradient(135deg, ${accentHex}ee, ${accentHex}bb)`, color: "black", boxShadow: `0 8px 24px ${accentHex}50` }}>
-               Complete Set
-             </button>
-          )}
-          {isRest && (
-             <button onClick={() => skipRest(exKey)}
-               className="px-8 py-3.5 rounded-2xl font-display text-lg transition-all active:scale-95"
-               style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}>
-               Skip Rest
-             </button>
+
+          {!isIdle && (
+            <>
+              {/* Restart */}
+              <button
+                onClick={() => restartSet(exKey)}
+                className="w-12 h-12 flex-none rounded-full flex items-center justify-center transition-all active:scale-95"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                <RotateCcw size={18} color="rgba(255,255,255,0.7)" />
+              </button>
+
+              {/* Center button: For timed or rest, it's Play/Pause. For manual work, it's Complete! */}
+              {(isWork && !parsed.isTimed) ? (
+                 <button onClick={() => tapSet(exKey, activeSetIdx)}
+                   className="px-8 py-3.5 flex-1 rounded-2xl font-display text-lg transition-all active:scale-95"
+                   style={{ background: `linear-gradient(135deg, ${accentHex}ee, ${accentHex}bb)`, color: "black", boxShadow: `0 8px 24px ${accentHex}50` }}>
+                   Complete Set
+                 </button>
+              ) : (
+                <button
+                  onClick={status === "active" ? onPause : onResume}
+                  className="w-20 h-20 flex-none rounded-full flex items-center justify-center transition-all active:scale-95 shadow-2xl"
+                  style={{
+                    background: `linear-gradient(135deg, ${accentHex}ee, ${accentHex}bb)`,
+                    boxShadow: `0 8px 32px ${accentHex}60, 0 0 0 1px ${accentHex}40`,
+                  }}
+                >
+                  {status === "active"
+                    ? <Pause size={30} fill="white" color="white" />
+                    : <Play size={30} fill="white" color="white" className="ml-1" />
+                  }
+                </button>
+              )}
+
+              {/* Skip (only for timed or rest) */}
+              {(parsed.isTimed || isRest) && (
+                <button
+                  onClick={() => isWork ? tapSet(exKey, activeSetIdx) : skipRest(exKey)}
+                  className="w-12 h-12 flex-none rounded-full flex items-center justify-center transition-all active:scale-95"
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                >
+                  <SkipForward size={18} color="rgba(255,255,255,0.7)" />
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -773,7 +840,7 @@ function ActiveSessionView({
       
       <AnimatePresence>
         {showPlayer && (
-          <WorkoutPlayerModal session={session} day={day} tick={tick} onUpdate={onUpdate} onDismiss={() => setShowPlayer(false)} />
+          <WorkoutPlayerModal session={session} day={day} tick={tick} status={status} onUpdate={onUpdate} onPause={onPause} onResume={onResume} onDismiss={() => setShowPlayer(false)} />
         )}
       </AnimatePresence>
       {/* End confirm */}
