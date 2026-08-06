@@ -724,6 +724,10 @@ function ActiveSessionView({
                   <Play size={16} fill="currentColor" />
                 </button>
               )}
+              <button onClick={() => setShowPlayer(true)}
+                className="p-2 rounded-xl border border-[rgba(224,168,58,0.3)] text-[--turmeric] hover:bg-[rgba(224,168,58,0.1)] transition-colors">
+                <Clock size={16} />
+              </button>
               <button onClick={() => setShowEndConfirm(true)}
                 className="p-2 rounded-xl border border-[rgba(201,96,63,0.4)] text-[--paprika] hover:bg-[rgba(201,96,63,0.1)] transition-colors">
                 <Square size={16} fill="currentColor" />
@@ -742,6 +746,29 @@ function ActiveSessionView({
           {stats.setsDone}/{stats.setsTotal} sets · ETA {formatMs(Math.max(0, stats.etaMs))} remaining
         </p>
       </div>
+
+      {/* Floating Action Button to reopen player */}
+      <AnimatePresence>
+        {!showPlayer && status === "active" && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowPlayer(true)}
+            className="fixed bottom-24 right-6 z-50 px-5 py-3 rounded-full font-display text-lg shadow-2xl flex items-center gap-2"
+            style={{
+              background: "linear-gradient(135deg, var(--turmeric), #dca63a)",
+              color: "var(--ink)",
+              boxShadow: "0 8px 32px rgba(224,168,58,0.4), 0 0 0 1px rgba(224,168,58,0.5)"
+            }}
+          >
+            <Clock size={20} />
+            Player
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       
       <AnimatePresence>
